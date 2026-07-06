@@ -1,0 +1,13 @@
+{
+  "states_total": 2,
+  "states_covered": 2,
+  "coverage": 100.0,
+  "states": [
+    "main_screen",
+    "settings_screen"
+  ],
+  "covered_states": [
+    "main_screen",
+    "settings_screen"
+  ]
+}

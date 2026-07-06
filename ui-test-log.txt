@@ -1,0 +1,2 @@
+STATE_REACHED: main_screen
+STATE_REACHED: settings_screen

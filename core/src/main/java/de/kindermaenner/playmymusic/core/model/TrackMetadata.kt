@@ -25,3 +25,13 @@ data class Song(
     var urlpart: String? = null,
     var image: String? = null
 )
+
+data class SongKey(
+    val urlPart: String,
+    val id: Int
+)
+
+data class PlaybackSettings(
+    val nasAddress: String,
+    val nasBaseFolder: String
+)

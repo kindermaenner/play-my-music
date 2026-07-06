@@ -1,0 +1,11 @@
+{
+  "nasAddress": "",
+  "nasBaseFolder": "",
+  "qrValidation": "",
+  "mappingFilePostfix": "",
+  "trackIdPadding": 3,
+  "smbUsername": "",
+  "smbPassword": "",
+  "smbDomain": "",
+  "debug_mode": false
+}

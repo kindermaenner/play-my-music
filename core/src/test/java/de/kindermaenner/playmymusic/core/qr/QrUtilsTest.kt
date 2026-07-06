@@ -8,47 +8,45 @@ import org.junit.Test
 
 class QrUtilsTest {
 
+    private val validationPrefix = "example.org/game/de/"
+
     @Test
     fun `isValidQr accepts correct patterns`() {
-        assertTrue(isValidQr("AB-1"))
-        assertTrue(isValidQr("XYZ-12"))
-        assertTrue(isValidQr("A1B2-123"))
-        assertTrue(isValidQr("CODE9-7"))
+        assertTrue(isValidQr("http://www.example.org/game/de/00009", validationPrefix))
+        assertTrue(isValidQr("https://www.example.org/game/de/edition1234/00086", validationPrefix))
+        assertTrue(isValidQr("https://example.org/game/de/00042", validationPrefix))
+        assertTrue(isValidQr("www.example.org/game/de/00001", validationPrefix))
     }
 
     @Test
     fun `isValidQr rejects invalid patterns`() {
-        assertFalse(isValidQr(""))
-        assertFalse(isValidQr("A-"))
-        assertFalse(isValidQr("-123"))
-        assertFalse(isValidQr("ab-12"))      // lowercase not allowed
-        assertFalse(isValidQr("ABC_12"))     // wrong separator
-        assertFalse(isValidQr("ABC-1234"))   // too many digits
-        assertFalse(isValidQr("ABCDEF-12"))  // too many chars before dash
-        assertFalse(isValidQr("AB-XYZ"))     // non-numeric second part
+        assertFalse(isValidQr("", validationPrefix))
+        assertFalse(isValidQr("http://example.com/de/00009", validationPrefix))
+        assertFalse(isValidQr("http://www.example.org/game/en/00009", validationPrefix))
+        assertFalse(isValidQr("http://www.example.org/game/de/edition1234/not-a-number", validationPrefix))
+        assertFalse(isValidQr("not-an-url", validationPrefix))
     }
 
     @Test
     fun `parseQr returns null for invalid input`() {
-        assertNull(parseQr(""))
-        assertNull(parseQr("invalid"))
-        assertNull(parseQr("ABC-XYZ"))
-        assertNull(parseQr("abc-12"))
-        assertNull(parseQr("ABC-1234"))
+        assertNull(parseQr("", validationPrefix))
+        assertNull(parseQr("invalid", validationPrefix))
+        assertNull(parseQr("http://www.example.org/game/en/00009", validationPrefix))
+        assertNull(parseQr("http://www.example.org/game/de/edition1234/not-a-number", validationPrefix))
     }
 
     @Test
-    fun `parseQr splits and pads correctly`() {
-        val result1 = parseQr("AB-1")
-        assertEquals("AB", result1?.first)
-        assertEquals("001", result1?.second)
+    fun `parseQr extracts edition path and track id`() {
+        val baseEdition = parseQr("http://www.example.org/game/de/00009", validationPrefix)
+        assertEquals("", baseEdition?.urlPart)
+        assertEquals(9, baseEdition?.trackId)
 
-        val result2 = parseQr("XYZ-12")
-        assertEquals("XYZ", result2?.first)
-        assertEquals("012", result2?.second)
+        val specialEdition = parseQr("https://www.example.org/game/de/edition1234/00086", validationPrefix)
+        assertEquals("edition1234", specialEdition?.urlPart)
+        assertEquals(86, specialEdition?.trackId)
 
-        val result3 = parseQr("CODE9-123")
-        assertEquals("CODE9", result3?.first)
-        assertEquals("123", result3?.second)
+        val noScheme = parseQr("www.example.org/game/de/00001", validationPrefix)
+        assertEquals("", noScheme?.urlPart)
+        assertEquals(1, noScheme?.trackId)
     }
 }

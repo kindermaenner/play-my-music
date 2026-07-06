@@ -57,3 +57,5 @@ jobs:
         with:
           files: core/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+
+

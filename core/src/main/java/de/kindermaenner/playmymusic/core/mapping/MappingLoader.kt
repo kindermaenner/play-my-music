@@ -1,18 +1,22 @@
 package de.kindermaenner.playmymusic.core.mapping
 
-import de.kindermaenner.playmymusic.core.model.Song
 import de.kindermaenner.playmymusic.core.model.MappingFile
+import de.kindermaenner.playmymusic.core.model.Song
+import de.kindermaenner.playmymusic.core.model.SongKey
 import com.google.gson.Gson
 
 object MappingLoader {
 
-    private var cache: Map<String, Song>? = null
+    private var cache: Map<SongKey, Song>? = null
+    private var cacheInput: List<String>? = null
 
-    fun parse(jsonFiles: List<String>): Map<String, Song> {
-        cache?.let { return it }
+    fun parse(jsonFiles: List<String>): Map<SongKey, Song> {
+        if (cacheInput == jsonFiles) {
+            cache?.let { return it }
+        }
 
         val gson = Gson()
-        val allSongs = mutableMapOf<String, Song>()
+        val allSongs = mutableMapOf<SongKey, Song>()
 
         for (json in jsonFiles) {
             val mapping = gson.fromJson(json, MappingFile::class.java)
@@ -23,9 +27,7 @@ object MappingLoader {
             val image = mapping.meta.image
 
             mapping.titles.forEach { song ->
-                val paddedId = "%05d".format(song.id)
-
-                val key = if (urlPart.isBlank()) paddedId else "$urlPart/$paddedId"
+                val key = SongKey(urlPart = urlPart, id = song.id)
 
                 song.edition = edition
                 song.kuerzel = editionAbbreviation
@@ -36,6 +38,7 @@ object MappingLoader {
             }
         }
 
+        cacheInput = jsonFiles.toList()
         cache = allSongs
         return allSongs
     }

@@ -1,8 +1,9 @@
 package de.kindermaenner.playmymusic.core.mapping
 
-import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
+import de.kindermaenner.playmymusic.core.model.SongKey
+import org.junit.Test
 
 class MappingLoaderTest {
 
@@ -46,7 +47,7 @@ class MappingLoaderTest {
 
         assertEquals(3, result.size)
 
-        val song1 = result["nonexistent/00001"]!!
+        val song1 = result[SongKey(urlPart = "nonexistent", id = 1)]!!
         assertEquals("Testdaten-Edition", song1.edition)
         assertEquals("TDE", song1.kuerzel)
         assertEquals("nonexistent", song1.urlpart)
@@ -56,7 +57,7 @@ class MappingLoaderTest {
         assertEquals(1234, song1.year)
         assertEquals("", song1.nasLocation)
 
-        val song2 = result["nonexistent/00002"]!!
+        val song2 = result[SongKey(urlPart = "nonexistent", id = 2)]!!
         assertEquals("Testdaten-Edition", song2.edition)
         assertEquals("TDE", song2.kuerzel)
         assertEquals("nonexistent", song2.urlpart)
@@ -66,7 +67,7 @@ class MappingLoaderTest {
         assertEquals(2345, song2.year)
         assertEquals("ordner1", song2.nasLocation)
 
-        val song3 = result["nonexistent/00003"]!!
+        val song3 = result[SongKey(urlPart = "nonexistent", id = 3)]!!
         assertEquals("Testdaten-Edition", song3.edition)
         assertEquals("TDE", song3.kuerzel)
         assertEquals("nonexistent", song3.urlpart)
@@ -114,7 +115,7 @@ class MappingLoaderTest {
         """.trimIndent()
 
         val first = MappingLoader.parse(listOf(json))
-        val second = MappingLoader.parse(listOf("IGNORED"))
+        val second = MappingLoader.parse(listOf(json))
 
         assertSame(first, second)
     }
