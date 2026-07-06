@@ -27,34 +27,38 @@ jobs:
 
         - name: Setup Android SDK
           uses: android-actions/setup-android@v3
+          with:
+            cmdline-tools-version: latest
 
         - name: Make gradlew executable
           run: chmod +x ./gradlew
 
-        # 🔥 WICHTIG: ARM Emulator statt x86 (kein KVM nötig)
-        - name: Run instrumented flow tests
+        - name: Enable KVM
+          run: |
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+
+        - name: Run instrumented tests
           uses: ReactiveCircus/android-emulator-runner@v2
           with:
             api-level: 34
             target: google_apis
-            arch: arm64-v8a
+            arch: x86_64
             profile: pixel_6
-            emulator-options: >
-                -no-window
-                -gpu swiftshader_indirect
-                -noaudio
-                -no-boot-anim
-                -no-snapshot
+            emulator-options: 
+              -no-window
+              -gpu swiftshader_indirect
+              -noaudio
+              -no-boot-anim
+              -no-snapshot
+              -accel on
             disable-animations: true
             script: |
-                set -o pipefail
-                adb wait-for-device
-                adb shell settings put global window_animation_scale 0
-                adb shell settings put global transition_animation_scale 0
-                adb shell settings put global animator_duration_scale 0
-
-                ./gradlew connectedDebugAndroidTest --console=plain | tee ui-test-full.log
-
+              set -o pipefail
+              adb wait-for-device
+              ./gradlew connectedDebugAndroidTest --console=plain | tee ui-test-full.log
+      
         - name: Extract UI state log
           run: |
             grep "STATE_REACHED:" ui-test-full.log > ui-test-log.txt || true
