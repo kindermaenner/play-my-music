@@ -21,6 +21,7 @@ runtime = "1.11.4"
 kotlinxCoroutinesAndroid = "1.11.0"
 uiTextGoogleFonts = "1.11.4"
 jcifsNg = "2.1.10"
+sonarqube = "7.4.0.8496"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,3 +64,4 @@ jcifs-ng = { module = "eu.agno3.jcifs:jcifs-ng", version.ref = "jcifsNg" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
