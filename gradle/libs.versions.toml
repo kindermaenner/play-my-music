@@ -18,10 +18,9 @@ navigationCompose = "2.9.8"
 media3Ui = "1.10.1"
 coilCompose = "2.7.0"
 runtime = "1.11.4"
-kotlinxCoroutinesAndroid = "1.11.0"
-uiTextGoogleFonts = "1.11.4"
 jcifsNg = "2.1.10"
 sonarqube = "7.4.0.8496"
+kover = "0.9.9"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,8 +55,6 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-androidx-compose-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 jcifs-ng = { module = "eu.agno3.jcifs:jcifs-ng", version.ref = "jcifsNg" }
 
 [plugins]
@@ -65,3 +62,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
