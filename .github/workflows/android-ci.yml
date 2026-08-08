@@ -40,8 +40,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Run Unit Tests + Coverage (core)
-        run: ./gradlew :core:testDebugUnitTest :core:jacocoTestReport --no-daemon
+      - name: Run Unit Tests + Coverage
+        run: ./gradlew koverXmlReport --no-daemon
 
       - name: SonarQube Scan
         if: github.ref == 'refs/heads/main'
