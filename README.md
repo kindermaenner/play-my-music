@@ -1,5 +1,10 @@
 # play-my-music
 
+![Coverage](https://raw.githubusercontent.com/kindermaenner/sonar-badges/main/badges/play-my-music/coverage.svg)
+![Bugs](https://raw.githubusercontent.com/kindermaenner/sonar-badges/main/badges/play-my-music/bugs.svg)
+![Code Smells](https://raw.githubusercontent.com/kindermaenner/sonar-badges/main/badges/play-my-music/code_smells.svg)
+![Security Hotspots](https://raw.githubusercontent.com/kindermaenner/sonar-badges/main/badges/play-my-music/security_hotspots.svg)
+
 play-my-music is an Android QR-based audio player for local music libraries stored on a NAS.
 
 The application scans a QR code, resolves it through one or more mapping files, builds the target audio path, and plays the matching track from an SMB-accessible network share.
