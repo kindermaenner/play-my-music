@@ -49,4 +49,32 @@ class QrUtilsTest {
         assertEquals("", noScheme?.urlPart)
         assertEquals(1, noScheme?.trackId)
     }
+
+    @Test
+    fun `parseQr handles queries and fragments`() {
+        val withQuery = parseQr("https://example.org/game/de/00042?foo=bar", validationPrefix)
+        assertEquals(42, withQuery?.trackId)
+        assertEquals("", withQuery?.urlPart)
+
+        val withFragment = parseQr("https://example.org/game/de/edition1/00042#section", validationPrefix)
+        assertEquals(42, withFragment?.trackId)
+        assertEquals("edition1", withFragment?.urlPart)
+    }
+
+    @Test
+    fun `parseQr works with empty validation prefix`() {
+        val emptyPrefix = ""
+        // Should take last segment as ID and one before as urlPart if not a locale
+        val result = parseQr("http://my-nas/music/rock/001", emptyPrefix)
+        assertEquals("rock", result?.urlPart)
+        assertEquals(1, result?.trackId)
+
+        val shortResult = parseQr("005", emptyPrefix)
+        assertEquals("", shortResult?.urlPart)
+        assertEquals(5, shortResult?.trackId)
+
+        val localeIgnored = parseQr("http://my-nas/de/001", emptyPrefix)
+        assertEquals("", localeIgnored?.urlPart)
+        assertEquals(1, localeIgnored?.trackId)
+    }
 }

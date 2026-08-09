@@ -79,38 +79,38 @@ class MappingLoaderTest {
     }
 
     @Test
+    fun `parse merges multiple files`() {
+        val json1 = """
+        {
+          "meta": { "edition": "E1", "kuerzel": "K1", "urlpart": "p1", "image": "i1" },
+          "titles": [ { "artist": "A1", "title": "T1", "year": 1, "nasLocation": "", "id": 1 } ]
+        }
+        """.trimIndent()
+        val json2 = """
+        {
+          "meta": { "edition": "E2", "kuerzel": "K2", "urlpart": "p2", "image": "i2" },
+          "titles": [ { "artist": "A2", "title": "T2", "year": 2, "nasLocation": "", "id": 2 } ]
+        }
+        """.trimIndent()
+
+        val result = MappingLoader.parse(listOf(json1, json2))
+
+        assertEquals(2, result.size)
+        assertEquals("E1", result[SongKey("p1", 1)]?.edition)
+        assertEquals("E2", result[SongKey("p2", 2)]?.edition)
+    }
+
+    @Test(expected = Exception::class)
+    fun `parse throws on invalid json`() {
+        MappingLoader.parse(listOf("invalid json"))
+    }
+
+    @Test
     fun `parse caches results`() {
         val json = """
         {
-          "meta": {
-            "edition": "Testdaten-Edition",
-            "kuerzel": "TDE",
-            "urlpart": "nonexistent",
-            "image": "testdaten-edition.jpg"
-          },
-          "titles": [
-            {
-              "artist": "Coole Band",
-              "title": "ABC-Lied",
-              "year": 1234,
-              "nasLocation": "",
-              "id": 1
-            },
-            {
-              "artist": "Noch coolere Band",
-              "title": "123-Lied",
-              "year": 2345,
-              "nasLocation": "ordner1",
-              "id": 2
-            },
-            {
-              "artist": "Uncoole Band",
-              "title": "The best song of the world",
-              "year": 4567,
-              "nasLocation": "ordner2",
-              "id": 3
-            }
-          ]
+          "meta": { "edition": "E", "kuerzel": "K", "urlpart": "p", "image": "i" },
+          "titles": [ { "artist": "A", "title": "T", "year": 1, "nasLocation": "", "id": 1 } ]
         }
         """.trimIndent()
 
