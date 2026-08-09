@@ -32,7 +32,7 @@ class AssetMappingLoader(private val context: Context) {
         } + offlineJsonFiles
     }
 
-    private fun matchesFileFilter(fileName: String, filterValue: String): Boolean {
+    internal fun matchesFileFilter(fileName: String, filterValue: String): Boolean {
         if (filterValue.isBlank()) {
             return true
         }

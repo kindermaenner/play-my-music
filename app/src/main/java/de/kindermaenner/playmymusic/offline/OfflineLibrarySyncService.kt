@@ -113,7 +113,7 @@ class OfflineLibrarySyncService(private val context: Context) {
         throw IOException("Unable to access NAS base directory: $detail", lastError)
     }
 
-    private fun buildBaseUri(settings: AppSettings): String {
+    internal fun buildBaseUri(settings: AppSettings): String {
         val host = settings.playback.nasAddress.trim().trimStart('\\', '/')
         val baseFolder = settings.playback.nasBaseFolder.trim().replace('\\', '/')
         return if (baseFolder.isBlank()) {
@@ -123,7 +123,7 @@ class OfflineLibrarySyncService(private val context: Context) {
         }
     }
 
-    private fun buildCandidateContexts(authSettings: SmbAuthSettings): List<CIFSContext> {
+    internal fun buildCandidateContexts(authSettings: SmbAuthSettings): List<CIFSContext> {
         val baseContext = SingletonContext.getInstance()
         val contexts = mutableListOf<CIFSContext>()
         contexts.add(baseContext.withCredentials(NtlmPasswordAuthenticator("", "")))

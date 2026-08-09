@@ -30,7 +30,7 @@ object Settings {
                 fallback = emptyOverrideSettings()
             )
 
-            return defaultSettings.merge(localSettings).also {
+            return merge(defaultSettings, localSettings).also {
                 cachedDefaults = it
             }
         }
@@ -54,7 +54,7 @@ object Settings {
         }
     }
 
-    private fun emptyOverrideSettings(): AppSettings {
+    internal fun emptyOverrideSettings(): AppSettings {
         return AppSettings(
             playback = PlaybackSettings(nasAddress = "", nasBaseFolder = ""),
             qrValidation = "",
@@ -65,20 +65,20 @@ object Settings {
         )
     }
 
-    private fun AppSettings.merge(override: AppSettings): AppSettings {
+    internal fun merge(base: AppSettings, override: AppSettings): AppSettings {
         return AppSettings(
             playback = PlaybackSettings(
-                nasAddress = override.playback.nasAddress.ifBlank { playback.nasAddress },
-                nasBaseFolder = override.playback.nasBaseFolder.ifBlank { playback.nasBaseFolder }
+                nasAddress = override.playback.nasAddress.ifBlank { base.playback.nasAddress },
+                nasBaseFolder = override.playback.nasBaseFolder.ifBlank { base.playback.nasBaseFolder }
             ),
-            qrValidation = override.qrValidation.ifBlank { qrValidation },
-            mappingFilePostfix = override.mappingFilePostfix.ifBlank { mappingFilePostfix },
-            trackIdPadding = if (override.trackIdPadding > 0) override.trackIdPadding else trackIdPadding,
-            trackFolderName = override.trackFolderName.ifBlank { trackFolderName },
+            qrValidation = override.qrValidation.ifBlank { base.qrValidation },
+            mappingFilePostfix = override.mappingFilePostfix.ifBlank { base.mappingFilePostfix },
+            trackIdPadding = if (override.trackIdPadding > 0) override.trackIdPadding else base.trackIdPadding,
+            trackFolderName = override.trackFolderName.ifBlank { base.trackFolderName },
             smbAuth = SmbAuthSettings(
-                username = override.smbAuth.username.ifBlank { smbAuth.username },
-                password = override.smbAuth.password.ifBlank { smbAuth.password },
-                domain = override.smbAuth.domain.ifBlank { smbAuth.domain }
+                username = override.smbAuth.username.ifBlank { base.smbAuth.username },
+                password = override.smbAuth.password.ifBlank { base.smbAuth.password },
+                domain = override.smbAuth.domain.ifBlank { base.smbAuth.domain }
             )
         )
     }
@@ -99,7 +99,7 @@ data class SmbAuthSettings(
     val domain: String = ""
 )
 
-private data class SettingsFile(
+internal data class SettingsFile(
     val nasAddress: String = "",
     val nasBaseFolder: String = "",
     val qrValidation: String = "",
@@ -111,7 +111,7 @@ private data class SettingsFile(
     val smbDomain: String = ""
 )
 
-private fun SettingsFile.toAppSettings(): AppSettings {
+internal fun SettingsFile.toAppSettings(): AppSettings {
     return AppSettings(
         playback = PlaybackSettings(
             nasAddress = nasAddress,
