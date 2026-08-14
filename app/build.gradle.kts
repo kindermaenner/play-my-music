@@ -67,7 +67,7 @@ androidComponents {
 
         variant.outputs.forEach { output ->
             output.outputFileName.set(
-                "${appName}-${variant.name}-v${versionName}.apk"
+                "play-my-music-${variant.name}-v${versionName}.apk"
             )
         }
     }
