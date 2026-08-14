@@ -8,8 +8,8 @@ lifecycleRuntimeKtx = "2.11.0"
 lifecycleViewmodelCompose = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.4.10"
-composeBom = "2026.06.01"
-appcompat = "1.7.1"
+composeBom = "2026.08.00"
+appcompat = "1.8.0"
 material = "1.14.0"
 gson = "2.14.0"
 barcodeScanning = "17.3.0"
@@ -18,15 +18,17 @@ datastore = "1.2.1"
 navigationCompose = "2.9.8"
 media3Ui = "1.11.0"
 coilCompose = "2.7.0"
-runtime = "1.11.4"
+rules = "1.7.0"
+runtime = "1.12.0"
 jcifsNg = "2.1.10"
 sonarqube = "7.4.0.8496"
 kover = "0.9.9"
-mockk = "1.13.13"
-coroutines = "1.10.1"
+mockk = "1.14.11"
+coroutines = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
