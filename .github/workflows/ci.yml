@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: kindermaenner/ci-templates/.github/workflows/android-build.yml@main
+    secrets: inherit
+
+  sonar:
+    needs: build
+    uses: kindermaenner/ci-templates/.github/workflows/common-sonar-gradle.yml@main
+    secrets: inherit
+
+  upload:
+    needs: build
+    uses: kindermaenner/ci-templates/.github/workflows/common-ftp-upload.yml@main
+    secrets: inherit
+    with:
+      uploads: |
+        [
+          {"source": "app/build/outputs/apk/debug/app-debug.apk", "target": "kindermaenner.de/app-downloads/play-my-music/play-my-music-debug.apk"},
+          {"source": "app/build/outputs/apk/release/app-release.apk", "target": "kindermaenner.de/app-downloads/play-my-music/play-my-music-release.apk"}
+        ]
+
+  update-badges:
+    needs: sonar
+    if: github.ref == 'refs/heads/main'
+    uses: kindermaenner/ci-templates/.github/workflows/common-badge-trigger.yml@main
+    secrets:
+      BADGE_APP_ID: ${{ secrets.BADGE_APP_ID }}
+      BADGE_APP_PRIVATE_KEY: ${{ secrets.BADGE_APP_PRIVATE_KEY }}
