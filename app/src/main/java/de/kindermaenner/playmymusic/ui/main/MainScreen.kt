@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -96,7 +97,7 @@ fun MainScreen(
     var playbackError by remember { mutableStateOf<String?>(null) }
     var playbackPath by remember { mutableStateOf<String?>(null) }
     var playbackUri by remember { mutableStateOf<String?>(null) }
-    var scanSession by remember { mutableStateOf(0) }
+    var scanSession by remember { mutableIntStateOf(0) }
 
     DisposableEffect(player) {
         val listener = object : Player.Listener {
