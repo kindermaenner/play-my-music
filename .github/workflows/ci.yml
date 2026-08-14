@@ -37,13 +37,7 @@ jobs:
     uses: kindermaenner/ci-templates/.github/workflows/common-ftp-upload.yml@main
     secrets: inherit
     with:
-      uploads: |
-        [
-          {
-            "source": "build-artifacts",
-            "target": "kindermaenner.de/app-downloads/play-my-music/"
-          }
-        ]
+      target-path: "kindermaenner.de/app-downloads/play-my-music/"
 
   update-badges:
     needs: sonar
