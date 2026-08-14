@@ -43,11 +43,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import coil.compose.rememberAsyncImagePainter
@@ -61,9 +61,9 @@ import de.kindermaenner.playmymusic.mapping.AssetMappingLoader
 import de.kindermaenner.playmymusic.offline.OfflineLibraryStorage
 import de.kindermaenner.playmymusic.player.SmbDataSource
 import de.kindermaenner.playmymusic.settings.AppSettings
-import de.kindermaenner.playmymusic.ui.state.stateId
 import de.kindermaenner.playmymusic.ui.UiConstants
 import de.kindermaenner.playmymusic.ui.components.NeonButton
+import de.kindermaenner.playmymusic.ui.state.stateId
 
 @OptIn(UnstableApi::class)
 @Composable

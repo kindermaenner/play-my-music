@@ -1,8 +1,8 @@
 package de.kindermaenner.playmymusic.core.mapping
 
+import de.kindermaenner.playmymusic.core.model.SongKey
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
-import de.kindermaenner.playmymusic.core.model.SongKey
 import org.junit.Test
 
 class MappingLoaderTest {

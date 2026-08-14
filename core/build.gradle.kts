@@ -4,10 +4,7 @@ plugins {
 
 android {
     namespace = "de.kindermaenner.playmymusic.core"
-
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 26
@@ -17,11 +14,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    buildTypes {
-        debug {
-        }
     }
 }
 

@@ -1,9 +1,9 @@
 package de.kindermaenner.playmymusic.core.mapping
 
+import com.google.gson.Gson
 import de.kindermaenner.playmymusic.core.model.MappingFile
 import de.kindermaenner.playmymusic.core.model.Song
 import de.kindermaenner.playmymusic.core.model.SongKey
-import com.google.gson.Gson
 
 object MappingLoader {
 
