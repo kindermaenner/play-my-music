@@ -1,5 +1,6 @@
 package de.kindermaenner.playmymusic.ui.main
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -62,6 +64,7 @@ import de.kindermaenner.playmymusic.ui.state.stateId
 import de.kindermaenner.playmymusic.ui.UiConstants
 import de.kindermaenner.playmymusic.ui.components.NeonButton
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MainScreen(
     debugMode: Boolean,

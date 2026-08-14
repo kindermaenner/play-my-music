@@ -41,7 +41,7 @@ Example configuration:
 
 ```json
 {
-  "nasAddress": "192.168.0.45",
+  "nasAddress": "192.168.178.42",
   "nasBaseFolder": "Multimedia\\playmymusic",
   "qrValidation": "example.org/game/de/",
   "mappingFilePostfix": "",

@@ -1,7 +1,9 @@
 package de.kindermaenner.playmymusic.player
 
+import androidx.annotation.OptIn
 import android.net.Uri
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
@@ -13,6 +15,7 @@ import jcifs.smb.SmbRandomAccessFile
 import java.io.IOException
 import kotlin.math.min
 
+@OptIn(UnstableApi::class)
 class SmbDataSource(
     private val smbUsername: String,
     private val smbPassword: String,
