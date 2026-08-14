@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kover)
 }
 
 android {
@@ -23,11 +22,6 @@ android {
     buildTypes {
         debug {
         }
-    }
-
-    lint {
-        checkReleaseBuilds = false
-        abortOnError = false
     }
 }
 

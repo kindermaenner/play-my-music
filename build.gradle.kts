@@ -40,3 +40,43 @@ sonar {
         property("sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory.get()}/reports/kover/report.xml")
     }
 }
+
+subprojects {
+    apply(plugin = "org.jetbrains.kotlinx.kover")
+
+    pluginManager.withPlugin("org.sonarqube") {
+        extensions.configure<org.sonarqube.gradle.SonarExtension> {
+            properties {
+                val lintReport = layout.buildDirectory
+                    .file("reports/lint-results-debug.xml")
+                    .get()
+                    .asFile
+
+                property(
+                    "sonar.androidLint.reportPaths",
+                    lintReport.absolutePath
+                )
+            }
+        }
+    }
+
+    // Konfiguration für Android-App-Module
+    pluginManager.withPlugin("com.android.application") {
+        extensions.configure<com.android.build.api.dsl.ApplicationExtension>("android") {
+            lint {
+                abortOnError = false
+                checkReleaseBuilds = false
+            }
+        }
+    }
+
+    // Konfiguration für Android-Library-Module
+    pluginManager.withPlugin("com.android.library") {
+        extensions.configure<com.android.build.api.dsl.LibraryExtension>("android") {
+            lint {
+                abortOnError = false
+                checkReleaseBuilds = false
+            }
+        }
+    }
+}
