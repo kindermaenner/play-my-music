@@ -25,6 +25,7 @@ sonarqube = "7.4.0.8496"
 kover = "0.9.9"
 mockk = "1.14.11"
 coroutines = "1.11.0"
+plantuml = "1.2026.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -59,11 +60,11 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Ui" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose",  version.ref = "navigationCompose"}
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
-
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 jcifs-ng = { module = "eu.agno3.jcifs:jcifs-ng", version.ref = "jcifsNg" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+plantuml = { module = "net.sourceforge.plantuml:plantuml", version.ref = "plantuml" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

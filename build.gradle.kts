@@ -1,10 +1,40 @@
+import org.gradle.api.artifacts.Configuration
+
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 plugins {
+    id("base")
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.kover)
+}
+
+val plantumlConfig: Configuration = configurations.create("plantumlConfig")
+
+dependencies {
+    plantumlConfig(libs.plantuml)
+}
+
+tasks.register<JavaExec>("generateDiagrams") {
+    group = "documentation"
+    description = "Generates SVG diagrams from PlantUML source files."
+    classpath = plantumlConfig
+    mainClass.set("net.sourceforge.plantuml.Run")
+
+    args(
+        "-tsvg",
+        "-o", "${projectDir}/docs/architecture/diagrams/out",
+        "${projectDir}/docs/architecture/diagrams/src/*.puml"
+    )
+
+    inputs.dir("docs/architecture/diagrams/src")
+    outputs.dir("docs/architecture/diagrams/out")
+}
+
+// Automatically generate diagrams during build
+tasks.named("assemble") {
+    dependsOn("generateDiagrams")
 }
 
 // Configuration for merged reports at root level

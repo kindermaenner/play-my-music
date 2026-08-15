@@ -1,0 +1,28 @@
+@startuml
+actor User
+participant "Camera/MLKit" as Cam
+participant "MainScreen" as UI
+participant "QrUtils" as QR
+participant "MappingLoader" as ML
+participant "OfflineStorage" as Store
+participant "TrackPathResolver" as Path
+participant "ExoPlayer" as Player
+
+User -> Cam : Scans QR
+Cam -> UI : onValidResult(text)
+UI -> QR : parseQr(text)
+QR -> UI : ParsedQrCode
+UI -> ML : loadJsonFiles() & parse()
+ML -> UI : List<Song>
+UI -> UI : Find Song by ID
+UI -> Store : resolveLocalTrackFile(song)
+alt Local File Exists
+    Store -> UI : localFile
+else Not Found
+    UI -> Path : resolve(settings, song)
+    Path -> UI : smbPath
+    UI -> UI : toPlayableUri(smbPath)
+end
+UI -> Player : setMediaItem(uri)
+UI -> Player : play()
+@enduml

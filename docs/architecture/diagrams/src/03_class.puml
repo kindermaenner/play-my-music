@@ -1,0 +1,28 @@
+@startuml
+class Song {
+    +int id
+    +String title
+    +String artist
+    +String nasLocation
+    +String edition
+}
+
+class MappingFile {
+    +MetaData meta
+    +List<Song> titles
+}
+
+class MetaData {
+    +String edition
+    +String kuerzel
+    +String urlpart
+}
+
+class AppSettings {
+    +PlaybackSettings playback
+    +SmbAuthSettings smbAuth
+}
+
+MappingFile *-- MetaData
+MappingFile *-- Song
+@enduml

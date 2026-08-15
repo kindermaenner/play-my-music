@@ -1,0 +1,21 @@
+@startuml
+package "App Module" {
+    [MainScreen] --> [MainViewModel]
+    [MainViewModel] --> [SettingsRepository]
+    [MainViewModel] --> [OfflineLibrarySyncService]
+    [MainScreen] --> [ExoPlayer]
+    [ExoPlayer] --> [SmbDataSource]
+    [MainScreen] --> [CameraPreview]
+}
+
+package "Core Module" {
+    [MappingLoader]
+    [TrackPathResolver]
+    [QrUtils]
+}
+
+[MainScreen] --> [MappingLoader]
+[MainScreen] --> [TrackPathResolver]
+[MainScreen] --> [QrUtils]
+[SmbDataSource] --> [jcifs-ng]
+@enduml
