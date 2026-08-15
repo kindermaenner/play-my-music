@@ -1,6 +1,6 @@
 package de.kindermaenner.playmymusic.settings
 
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

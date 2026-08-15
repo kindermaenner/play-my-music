@@ -35,3 +35,4 @@ google-services.json
 
 # Local Play My Music test data
 app/src/main/assets/local/
+/.artifacts
