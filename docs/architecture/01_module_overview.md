@@ -1,20 +1,24 @@
 # 01 Module Overview
 
-The project is structured into two main modules to ensure separation of concerns and testability.
+The project is structured into three main modules to ensure separation of concerns and testability.
 
-## Module `:core` (Android Library)
-Responsible for platform-independent business logic and data models.
-- **`mapping`**: Contains `MappingLoader` for JSON parsing and `TrackPathResolver` for file path generation.
-- **`model`**: Defines core entities like `Song`, `MappingFile`, and `PlaybackSettings`.
-- **`qr`**: `QrUtils` for normalizing and parsing QR code content.
+## Module `:domain` (Pure Kotlin Library)
+Contains the core business logic and rules of the game.
+- **`model`**: Defines core entities like `Track` and `PlaybackConfig`.
+- **`repository`**: Interfaces for data access (`MappingRepository`, `LocalTrackResolver`).
+- **`usecase`**: Encapsulates game logic like `IdentifyTrackUseCase` and `ResolveTrackUriUseCase`.
+
+## Module `:data` (Android Library)
+Responsible for concrete data implementations and external integrations.
+- **`mapping`**: `JsonMappingRepository` for parsing local and asset-based JSON files.
+- **`model`**: DTOs for JSON deserialization (`MappingFile`, `Song`).
 
 ## Module `:app` (Android Application)
-Contains UI components, hardware interactions, and Android-specific services.
-- **`camera`**: `CameraPreview` using CameraX and ML Kit for barcode scanning.
-- **`player`**: `SmbDataSource` integrating Media3/ExoPlayer with the SMB protocol.
-- **`offline`**: `OfflineLibrarySyncService` and `OfflineLibraryStorage` for local file caching.
-- **`settings`**: `SettingsRepository` using Jetpack DataStore for reactive configuration.
-- **`ui`**: Jetpack Compose screens (`MainScreen`, `SettingsScreen`) and theme definitions.
+Contains UI components, hardware interactions, and glue code.
+- **`camera`**: `CameraPreview` using CameraX and ML Kit.
+- **`player`**: `SmbDataSource` for Media3/ExoPlayer.
+- **`settings`**: `SettingsRepository` using DataStore.
+- **`ui`**: Jetpack Compose screens and ViewModels.
 
 ---
 

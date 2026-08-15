@@ -30,7 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
 import de.kindermaenner.playmymusic.ui.UiConstants

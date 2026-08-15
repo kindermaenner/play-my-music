@@ -2,14 +2,13 @@
 
 The system relies on a set of core models to represent music tracks and application state.
 
-## Core Models
-- **`Song`**: The primary entity representing a music track. Contains metadata like `id`, `title`, `artist`, and `nasLocation`.
-- **`MappingFile`**: Represents a JSON file containing metadata about an "edition" and its associated tracks.
-- **`MetaData`**: Contains edition-level info: `edition` name, `kuerzel` (abbreviation), `urlpart`, and cover image path.
-- **`AppSettings`**: The aggregate configuration including `PlaybackSettings` (NAS address, base folder) and `SmbAuthSettings` (credentials).
+## Domain Models
+- **`Track`**: The primary entity representing a music track in the domain layer.
+- **`PlaybackConfig`**: Contains configuration for path resolution.
 
-## Key-Value Structure
-The `MappingLoader` creates a map where the key is a `SongKey` (combination of `urlPart` and `trackId`) to allow fast lookups during the scanning process.
+## Data Models (DTOs)
+- **`MappingFile`**: Represents the JSON structure of a mapping file.
+- **`Song`**: The data representation of a song in the JSON file.
 
 ---
 

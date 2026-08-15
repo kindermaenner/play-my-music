@@ -2,20 +2,29 @@
 package "App Module" {
     [MainScreen] --> [MainViewModel]
     [MainViewModel] --> [SettingsRepository]
-    [MainViewModel] --> [OfflineLibrarySyncService]
+    [MainViewModel] --> [IdentifyTrackUseCase]
+    [MainViewModel] --> [ResolveTrackUriUseCase]
     [MainScreen] --> [ExoPlayer]
-    [ExoPlayer] --> [SmbDataSource]
-    [MainScreen] --> [CameraPreview]
 }
 
-package "Core Module" {
-    [MappingLoader]
-    [TrackPathResolver]
-    [QrUtils]
+package "Domain Module" {
+    [IdentifyTrackUseCase]
+    [ResolveTrackUriUseCase]
+    interface MappingRepository
+    interface LocalTrackResolver
 }
 
-[MainScreen] --> [MappingLoader]
-[MainScreen] --> [TrackPathResolver]
-[MainScreen] --> [QrUtils]
+package "Data Module" {
+    [JsonMappingRepository]
+    [AppLocalTrackResolver]
+}
+
+[IdentifyTrackUseCase] --> MappingRepository
+[ResolveTrackUriUseCase] --> LocalTrackResolver
+
+MappingRepository <|-- [JsonMappingRepository]
+LocalTrackResolver <|-- [AppLocalTrackResolver]
+
+[ExoPlayer] --> [SmbDataSource]
 [SmbDataSource] --> [jcifs-ng]
 @enduml

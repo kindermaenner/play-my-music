@@ -26,6 +26,7 @@ jobs:
     secrets: inherit
     with:
       keystore-file: "play-my-music-release.jks"
+      run-instrumented-tests: true
 
   sonar:
     needs: build

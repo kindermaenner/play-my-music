@@ -7,4 +7,9 @@
 4.  **Storage**: Syncing a large music collection can quickly consume available device storage.
 
 ## Architecture Summary
-The "Play My Music" architecture is an **Offline-First, Layered System**. It successfully abstracts complex network protocols (SMB) behind standard Android interfaces (Media3). By separating core business logic from the UI/Infrastructure layer, the app remains maintainable and testable while providing a specialized, low-friction user experience via QR code interaction.
+The "Play My Music" architecture is a **Clean Architecture System** with three layers:
+1.  **Domain Layer (`:domain`)**: Pure Kotlin logic, interfaces, and models.
+2.  **Data Layer (`:data`)**: Implementation of repositories and data models.
+3.  **App Layer (`:app`)**: UI, manual DI, and Android framework integration.
+
+By centralizing game logic in Use Cases, the system is highly testable and decoupled from specific storage or playback technologies.

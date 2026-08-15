@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

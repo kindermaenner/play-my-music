@@ -40,7 +40,8 @@ tasks.named("assemble") {
 // Configuration for merged reports at root level
 dependencies {
     kover(project(":app"))
-    kover(project(":core"))
+    kover(project(":domain"))
+    kover(project(":data"))
 }
 
 kover {
@@ -70,7 +71,7 @@ sonar {
         property("sonar.coverage.jacoco.xmlReportPaths", listOf(
             "${layout.buildDirectory.get()}/reports/kover/report.xml",
             "${project(":app").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml",
-            "${project(":core").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml"
+            "${project(":data").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml"
         ).joinToString(","))
     }
 }

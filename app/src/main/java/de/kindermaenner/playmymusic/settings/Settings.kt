@@ -2,7 +2,7 @@ package de.kindermaenner.playmymusic.settings
 
 import android.content.Context
 import com.google.gson.Gson
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 
 object Settings {
 

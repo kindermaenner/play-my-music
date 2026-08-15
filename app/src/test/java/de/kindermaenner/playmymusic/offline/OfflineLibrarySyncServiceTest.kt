@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.offline
 
 import android.content.Context
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
 import io.mockk.mockk

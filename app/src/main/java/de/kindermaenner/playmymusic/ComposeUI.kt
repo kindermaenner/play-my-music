@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.ui.main.MainScreen
 
+import de.kindermaenner.playmymusic.ui.main.MainUiState
+
 @Composable
 fun App(
     debugMode: Boolean,
@@ -15,9 +17,15 @@ fun App(
 ){
     Box(Modifier.fillMaxSize()) {
         MainScreen(
+            uiState = MainUiState(),
             debugMode = debugMode,
             appSettings = appSettings,
-            onOpenSettings = onOpenSettings
+            onQrScanned = {},
+            onPlayPauseToggled = {},
+            onPlaybackError = {},
+            onResetToScanner = {},
+            onOpenSettings = onOpenSettings,
+            onLoadMappings = {}
         )
     }
 }

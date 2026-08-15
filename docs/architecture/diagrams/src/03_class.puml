@@ -1,28 +1,37 @@
 @startuml
-class Song {
-    +int id
-    +String title
-    +String artist
-    +String nasLocation
-    +String edition
+package "Domain" {
+    class Track {
+        +int id
+        +String title
+        +String artist
+        +String edition
+        +String urlPart
+    }
+
+    class PlaybackConfig {
+        +String nasAddress
+        +String nasBaseFolder
+    }
+
+    interface MappingRepository {
+        +getTrack(urlPart, id): Track
+    }
+
+    interface LocalTrackResolver {
+        +resolveLocalUri(track): String
+    }
 }
 
-class MappingFile {
-    +MetaData meta
-    +List<Song> titles
+package "Data" {
+    class JsonMappingRepository
+    class AppLocalTrackResolver
+    class MappingFile
+    class Song
 }
 
-class MetaData {
-    +String edition
-    +String kuerzel
-    +String urlpart
-}
+MappingRepository <|-- JsonMappingRepository
+LocalTrackResolver <|-- AppLocalTrackResolver
 
-class AppSettings {
-    +PlaybackSettings playback
-    +SmbAuthSettings smbAuth
-}
-
-MappingFile *-- MetaData
+JsonMappingRepository ..> MappingFile
 MappingFile *-- Song
 @enduml

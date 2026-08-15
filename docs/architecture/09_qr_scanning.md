@@ -7,7 +7,8 @@ QR code recognition is the primary interaction method for users.
 - **Image Analysis**: Google ML Kit Barcode Scanning identifies QR codes.
 
 ## Validation Logic
-`QrUtils` handles the normalization of raw barcode content:
-- Removes protocols (`http://`, `https://`).
-- Strips URL parameters and fragments.
-- Compares the result against the configured `qrValidation` prefix to prevent unauthorized or incompatible codes from being processed.
+The normalization and validation logic is encapsulated in the `IdentifyTrackUseCase`. It handles:
+- Removing protocols (`http://`, `https://`).
+- Stripping URL parameters and fragments.
+- Validating the resulting suffix against the configured prefix.
+- Identifying the `urlPart` and `trackId`.

@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.offline
 
 import android.content.Context
-import de.kindermaenner.playmymusic.core.model.Song
+import de.kindermaenner.playmymusic.domain.model.Track
 import de.kindermaenner.playmymusic.settings.AppSettings
 import io.mockk.every
 import io.mockk.mockk
@@ -50,10 +50,10 @@ class OfflineLibraryStorageTest {
         val trackFile = File(tracksDir, "0042.mp3")
         trackFile.writeText("dummy content")
 
-        val song = Song(id = 42, title = "T", artist = "A", year = 2024, nasLocation = "", edition = edition)
+        val track = Track(id = 42, title = "T", artist = "A", year = 2024, nasLocation = "", edition = edition, editionAbbreviation = "ME", urlPart = "url", image = "")
         val appSettings = AppSettings(trackIdPadding = 4, trackFolderName = "tracks")
 
-        val resolved = storage.resolveLocalTrackFile(song, appSettings)
+        val resolved = storage.resolveLocalTrackFile(track, appSettings)
         
         assertEquals(trackFile.absolutePath, resolved?.absolutePath)
     }
@@ -68,10 +68,10 @@ class OfflineLibraryStorageTest {
         explicitFile.parentFile.mkdirs()
         explicitFile.writeText("dummy content")
 
-        val song = Song(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "special\\path\\song.mp3", edition = edition)
+        val track = Track(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "special\\path\\song.mp3", edition = edition, editionAbbreviation = "ME", urlPart = "url", image = "")
         val appSettings = AppSettings()
 
-        val resolved = storage.resolveLocalTrackFile(song, appSettings)
+        val resolved = storage.resolveLocalTrackFile(track, appSettings)
         
         assertEquals(explicitFile.absolutePath, resolved?.absolutePath)
     }
@@ -85,9 +85,9 @@ class OfflineLibraryStorageTest {
         val imageFile = File(editionDir, "cover.jpg")
         imageFile.writeText("image data")
 
-        val song = Song(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "", edition = edition, image = "cover.jpg")
+        val track = Track(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "", edition = edition, editionAbbreviation = "ME", urlPart = "url", image = "cover.jpg")
         
-        val result = storage.resolveArtworkSource(song)
+        val result = storage.resolveArtworkSource(track)
         
         assertTrue(result is File)
         assertEquals(imageFile.absolutePath, (result as File).absolutePath)
@@ -95,9 +95,9 @@ class OfflineLibraryStorageTest {
 
     @Test
     fun `resolveArtworkSource falls back to asset if local file missing`() {
-        val song = Song(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "", edition = "Missing", image = "cover.jpg")
+        val track = Track(id = 1, title = "T", artist = "A", year = 2024, nasLocation = "", edition = "Missing", editionAbbreviation = "M", urlPart = "u", image = "cover.jpg")
         
-        val result = storage.resolveArtworkSource(song)
+        val result = storage.resolveArtworkSource(track)
         
         assertEquals("file:///android_asset/cover.jpg", result)
     }

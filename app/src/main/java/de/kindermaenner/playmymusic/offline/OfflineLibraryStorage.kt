@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.offline
 
 import android.content.Context
-import de.kindermaenner.playmymusic.core.model.Song
+import de.kindermaenner.playmymusic.domain.model.Track
 import de.kindermaenner.playmymusic.settings.AppSettings
 import java.io.File
 
@@ -24,13 +24,13 @@ class OfflineLibraryStorage(private val context: Context) {
         }
     }
 
-    fun resolveArtworkSource(song: Song): Any? {
-        val imageName = song.image?.trim().orEmpty()
+    fun resolveArtworkSource(track: Track): Any? {
+        val imageName = track.image.trim()
         if (imageName.isBlank()) {
             return null
         }
 
-        val localFile = File(editionDir(song.edition.orEmpty()), imageName)
+        val localFile = File(editionDir(track.edition), imageName)
         return if (localFile.exists()) {
             localFile
         } else {
@@ -38,14 +38,14 @@ class OfflineLibraryStorage(private val context: Context) {
         }
     }
 
-    fun resolveLocalTrackFile(song: Song, appSettings: AppSettings): File? {
-        val edition = song.edition?.trim().orEmpty()
+    fun resolveLocalTrackFile(track: Track, appSettings: AppSettings): File? {
+        val edition = track.edition.trim()
         if (edition.isBlank()) {
             return null
         }
 
         val editionDirectory = editionDir(edition)
-        val explicitLocation = song.nasLocation.trim()
+        val explicitLocation = track.nasLocation.trim()
         if (explicitLocation.isNotBlank()) {
             val candidate = File(editionDirectory, explicitLocation.replace("\\", "/"))
             if (candidate.exists()) {
@@ -61,7 +61,7 @@ class OfflineLibraryStorage(private val context: Context) {
             }
         }
 
-        val paddedFileName = song.id.toString()
+        val paddedFileName = track.id.toString()
             .padStart(appSettings.trackIdPadding.coerceAtLeast(1), '0') + ".mp3"
         val generatedFile = File(
             File(editionDirectory, appSettings.trackFolderName.ifBlank { "tracks" }),

@@ -1,5 +1,9 @@
 package de.kindermaenner.playmymusic.ui.main
 
+import de.kindermaenner.playmymusic.data.mapping.JsonMappingRepository
+import de.kindermaenner.playmymusic.domain.usecase.IdentifyTrackUseCase
+import de.kindermaenner.playmymusic.domain.usecase.ResolveTrackUriUseCase
+import de.kindermaenner.playmymusic.mapping.AssetMappingLoader
 import de.kindermaenner.playmymusic.offline.OfflineLibrarySyncService
 import de.kindermaenner.playmymusic.offline.SyncResult
 import de.kindermaenner.playmymusic.settings.AppSettings
@@ -24,6 +28,10 @@ class MainViewModelTest {
 
     private val repo = mockk<SettingsRepository>(relaxed = true)
     private val syncService = mockk<OfflineLibrarySyncService>(relaxed = true)
+    private val mappingRepository = mockk<JsonMappingRepository>(relaxed = true)
+    private val assetMappingLoader = mockk<AssetMappingLoader>(relaxed = true)
+    private val identifyTrackUseCase = mockk<IdentifyTrackUseCase>(relaxed = true)
+    private val resolveTrackUriUseCase = mockk<ResolveTrackUriUseCase>(relaxed = true)
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var viewModel: MainViewModel
@@ -33,7 +41,14 @@ class MainViewModelTest {
         Dispatchers.setMain(testDispatcher)
         every { repo.debugMode } returns flowOf(false)
         every { repo.appSettings } returns flowOf(AppSettings())
-        viewModel = MainViewModel(repo, syncService)
+        viewModel = MainViewModel(
+            repo = repo,
+            offlineSyncService = syncService,
+            mappingRepository = mappingRepository,
+            assetMappingLoader = assetMappingLoader,
+            identifyTrackUseCase = identifyTrackUseCase,
+            resolveTrackUriUseCase = resolveTrackUriUseCase
+        )
     }
 
     @After

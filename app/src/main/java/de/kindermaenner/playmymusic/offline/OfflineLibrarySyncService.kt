@@ -2,7 +2,7 @@ package de.kindermaenner.playmymusic.offline
 
 import android.content.Context
 import com.google.gson.Gson
-import de.kindermaenner.playmymusic.core.model.MappingFile
+import de.kindermaenner.playmymusic.data.model.MappingFile
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
 import jcifs.CIFSContext
