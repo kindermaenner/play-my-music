@@ -36,10 +36,15 @@ sonar {
         property("sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000")
         property("sonar.token", System.getenv("SONAR_TOKEN") ?: "")
         
-        // Point Sonar to Kover's aggregated XML report
-        property("sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory.get()}/reports/kover/report.xml")
+        // Point Sonar to Kover's aggregated XML report and JaCoCo instrumented reports
+        property("sonar.coverage.jacoco.xmlReportPaths", listOf(
+            "${layout.buildDirectory.get()}/reports/kover/report.xml",
+            "${project(":app").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml",
+            "${project(":core").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml"
+        ).joinToString(","))
     }
 }
+
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlinx.kover")
