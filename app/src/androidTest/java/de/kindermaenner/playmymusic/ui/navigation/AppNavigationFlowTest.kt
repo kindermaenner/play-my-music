@@ -8,9 +8,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
+import de.kindermaenner.playmymusic.ui.main.MainUiState
 import de.kindermaenner.playmymusic.ui.state.logVisibleStates
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -31,10 +32,16 @@ class AppNavigationFlowTest {
             MaterialTheme {
                 AppNavigation(
                     navController = rememberNavController(),
+                    uiState = MainUiState(),
                     debugMode = true,
                     appSettings = sampleSettings(),
                     syncMessage = null,
                     isSyncing = false,
+                    onQrScanned = {},
+                    onPlayPauseToggled = {},
+                    onPlaybackError = {},
+                    onResetToScanner = {},
+                    onLoadMappings = {},
                     onOpenSettings = {},
                     onDebugToggle = {},
                     onSettingsSave = { saveCalls += 1 },

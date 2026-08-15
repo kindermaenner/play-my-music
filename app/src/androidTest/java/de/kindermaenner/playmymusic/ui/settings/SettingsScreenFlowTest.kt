@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
-import de.kindermaenner.playmymusic.core.model.PlaybackSettings
+import de.kindermaenner.playmymusic.data.model.PlaybackSettings
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
 import de.kindermaenner.playmymusic.ui.state.logVisibleStates
