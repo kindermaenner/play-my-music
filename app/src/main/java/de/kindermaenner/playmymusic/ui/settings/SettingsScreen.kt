@@ -77,7 +77,6 @@ fun SettingsScreen(
         .testTag("state_settings_screen")
         .background(UiConstants.Background)
         .verticalScroll(scrollState)
-        .testTag("settings_screen_scroll")
         .padding(24.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

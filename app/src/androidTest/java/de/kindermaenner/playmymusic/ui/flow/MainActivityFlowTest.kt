@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.ui.flow
 
 import android.Manifest
-import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -36,7 +36,7 @@ class MainActivityFlowTest {
             .assertExists()
 
         repeat(3) {
-            composeTestRule.onNodeWithTag("settings_screen_scroll")
+            composeTestRule.onNodeWithTag("state_settings_screen")
                 .performTouchInput { swipeUp() }
         }
 
