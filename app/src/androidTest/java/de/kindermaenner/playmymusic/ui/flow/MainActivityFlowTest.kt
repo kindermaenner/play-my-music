@@ -32,7 +32,7 @@ class MainActivityFlowTest {
         composeTestRule.onNodeWithContentDescription("Settings").performClick()
         composeTestRule.logVisibleStates()
 
-        composeTestRule.onNodeWithTag("state_settings_screen", useUnmergedTree = true)
+        composeTestRule.onNodeWithTag("settings_screen_scroll", useUnmergedTree = true)
             .assertExists()
 
         repeat(3) {

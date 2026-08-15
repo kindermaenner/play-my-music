@@ -1,4 +1,5 @@
 @startuml
+!pragma layout smetana
 package "Domain" {
     class Track {
         +int id

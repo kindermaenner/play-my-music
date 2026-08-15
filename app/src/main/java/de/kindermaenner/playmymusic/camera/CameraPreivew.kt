@@ -79,62 +79,66 @@ fun CameraPreview(
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
 
                 cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
+                    try {
+                        val cameraProvider = cameraProviderFuture.get()
 
-                    cameraProvider.unbindAll()
+                        cameraProvider.unbindAll()
 
-                    val preview = Preview.Builder()
-                        .build()
-                        .also {
-                            it.surfaceProvider = previewView.surfaceProvider
-                        }
+                        val preview = Preview.Builder()
+                            .build()
+                            .also {
+                                it.surfaceProvider = previewView.surfaceProvider
+                            }
 
-                    val barcodeScanner = BarcodeScanning.getClient()
+                        val barcodeScanner = BarcodeScanning.getClient()
 
-                    val analysis = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
+                        val analysis = ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
 
-                    analysis.setAnalyzer(ContextCompat.getMainExecutor(ctx)) { imageProxy ->
-                        if (!isActive || scanHandled || !scanReady) {
-                            imageProxy.close()
-                            return@setAnalyzer
-                        }
+                        analysis.setAnalyzer(ContextCompat.getMainExecutor(ctx)) { imageProxy ->
+                            if (!isActive || scanHandled || !scanReady) {
+                                imageProxy.close()
+                                return@setAnalyzer
+                            }
 
-                        val mediaImage = imageProxy.image
-                        if (mediaImage != null) {
-                            val inputImage = InputImage.fromMediaImage(
-                                mediaImage,
-                                imageProxy.imageInfo.rotationDegrees
-                            )
+                            val mediaImage = imageProxy.image
+                            if (mediaImage != null) {
+                                val inputImage = InputImage.fromMediaImage(
+                                    mediaImage,
+                                    imageProxy.imageInfo.rotationDegrees
+                                )
 
-                            barcodeScanner.process(inputImage)
-                                .addOnSuccessListener { barcodes ->
-                                    val value = barcodes.firstOrNull()?.rawValue
+                                barcodeScanner.process(inputImage)
+                                    .addOnSuccessListener { barcodes ->
+                                        val value = barcodes.firstOrNull()?.rawValue
 
-                                    if (value != null) {
-                                        scanHandled = true
-                                        onValidResult(value)
+                                        if (value != null) {
+                                            scanHandled = true
+                                            onValidResult(value)
+                                        }
                                     }
-                                }
-                                .addOnCompleteListener {
-                                    imageProxy.close()
-                                }
-                        } else {
-                            imageProxy.close()
+                                    .addOnCompleteListener {
+                                        imageProxy.close()
+                                    }
+                            } else {
+                                imageProxy.close()
+                            }
                         }
+
+                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                        cameraProvider.bindToLifecycle(
+                            lifecycleOwner,
+                            cameraSelector,
+                            preview,
+                            analysis
+                        )
+
+                        Log.d("CameraX", "CameraPreview started")
+                    } catch (e: Exception) {
+                        Log.e("CameraX", "Camera initialization failed", e)
                     }
-
-                    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                    cameraProvider.bindToLifecycle(
-                        lifecycleOwner,
-                        cameraSelector,
-                        preview,
-                        analysis
-                    )
-
-                    Log.d("CameraX", "CameraPreview started")
                 }, ContextCompat.getMainExecutor(ctx))
 
                 previewView
