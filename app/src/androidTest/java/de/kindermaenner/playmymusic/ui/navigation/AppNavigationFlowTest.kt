@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.ui.navigation
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -55,8 +55,11 @@ class AppNavigationFlowTest {
         composeTestRule.onNodeWithContentDescription("Settings").performClick()
         composeTestRule.logVisibleStates()
 
+        composeTestRule.onNodeWithTag("state_settings_screen", useUnmergedTree = true)
+            .assertExists()
+
         repeat(3) {
-            composeTestRule.onNodeWithTag("settings_screen_scroll")
+            composeTestRule.onNodeWithTag("settings_screen_scroll", useUnmergedTree = true)
                 .performTouchInput { swipeUp() }
         }
         composeTestRule.onNodeWithTag("back_button").performClick()

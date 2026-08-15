@@ -80,6 +80,7 @@ fun CameraPreview(
 
                 cameraProviderFuture.addListener({
                     try {
+                        if (cameraProviderFuture.isCancelled) return@addListener
                         val cameraProvider = cameraProviderFuture.get()
 
                         cameraProvider.unbindAll()

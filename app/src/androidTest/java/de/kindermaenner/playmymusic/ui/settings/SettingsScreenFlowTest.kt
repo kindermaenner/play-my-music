@@ -1,8 +1,9 @@
 package de.kindermaenner.playmymusic.ui.settings
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -108,19 +109,14 @@ class SettingsScreenFlowTest {
 
         composeTestRule.logVisibleStates()
 
-        composeTestRule.runOnIdle {
-            val messageNodes = composeTestRule
-                .onAllNodesWithTag("sync_message_text", useUnmergedTree = true)
-                .fetchSemanticsNodes()
-            assertEquals(1, messageNodes.size)
-        }
-        composeTestRule.onNodeWithText("Metadata synced successfully").fetchSemanticsNode()
+        composeTestRule.onAllNodesWithTag("sync_message_text", useUnmergedTree = true)
+            .assertCountEquals(1)
+        
+        composeTestRule.onNodeWithText("Metadata synced successfully").assertExists()
 
         scrollToBottom()
         composeTestRule.onNodeWithTag("sync_metadata_button").performClick()
-        composeTestRule.logVisibleStates()
         composeTestRule.onNodeWithTag("sync_tracks_button").performClick()
-        composeTestRule.logVisibleStates()
 
         composeTestRule.runOnIdle {
             assertEquals(1, metadataSyncCalls)
@@ -150,19 +146,14 @@ class SettingsScreenFlowTest {
 
         composeTestRule.logVisibleStates()
 
-        composeTestRule.runOnIdle {
-            val messageNodes = composeTestRule
-                .onAllNodesWithTag("sync_message_text", useUnmergedTree = true)
-                .fetchSemanticsNodes()
-            assertEquals(0, messageNodes.size)
-        }
+        composeTestRule.onAllNodesWithTag("sync_message_text", useUnmergedTree = true)
+            .assertCountEquals(0)
+
         scrollToBottom()
         composeTestRule.onNodeWithTag("sync_metadata_button").assertIsNotEnabled()
         composeTestRule.onNodeWithTag("sync_tracks_button").assertIsNotEnabled()
 
-        scrollToBottom()
         composeTestRule.onNodeWithTag("back_button").performClick()
-        composeTestRule.logVisibleStates()
 
         composeTestRule.runOnIdle {
             assertEquals(1, backCalls)

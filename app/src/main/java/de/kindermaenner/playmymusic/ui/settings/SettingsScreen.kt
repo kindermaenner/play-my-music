@@ -74,6 +74,7 @@ fun SettingsScreen(
     Column(Modifier
         .fillMaxSize()
         .semantics { stateId = "settings_screen" }
+        .testTag("state_settings_screen")
         .background(UiConstants.Background)
         .verticalScroll(scrollState)
         .testTag("settings_screen_scroll")
