@@ -1,7 +1,7 @@
 package de.kindermaenner.playmymusic.ui.navigation
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -29,9 +29,10 @@ class AppNavigationFlowTest {
         var backSyncTracksCalls = 0
 
         composeTestRule.setContent {
+            val navController = rememberNavController()
             MaterialTheme {
                 AppNavigation(
-                    navController = rememberNavController(),
+                    navController = navController,
                     uiState = MainUiState(),
                     debugMode = true,
                     appSettings = sampleSettings(),
@@ -44,7 +45,7 @@ class AppNavigationFlowTest {
                     onPlaybackError = {},
                     onResetToScanner = {},
                     onLoadMappings = {},
-                    onOpenSettings = {},
+                    onOpenSettings = { navController.navigate("settings") },
                     onDebugToggle = {},
                     onSettingsSave = { saveCalls += 1 },
                     onSyncMetadata = { backSyncMetadataCalls += 1 },
