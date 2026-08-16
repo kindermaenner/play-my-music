@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
@@ -45,12 +46,15 @@ fun MainScreen(
     uiState: MainUiState,
     debugMode: Boolean,
     appSettings: AppSettings,
+    isCameraAvailable: Boolean,
+    cameraPermissionGranted: Boolean,
     onQrScanned: (String) -> Unit,
     onPlayPauseToggled: (Boolean) -> Unit,
     onPlaybackError: (String) -> Unit,
     onResetToScanner: () -> Unit,
+    onLoadMappings: () -> Unit,
     onOpenSettings: () -> Unit,
-    onLoadMappings: () -> Unit
+    onRequestCameraPermission: () -> Unit
 ) {
     val context = LocalContext.current
     val offlineLibraryStorage = remember(context) { OfflineLibraryStorage(context) }
@@ -137,10 +141,38 @@ fun MainScreen(
                 .border(3.dp, UiConstants.NeonGreen, RoundedCornerShape(12.dp))
         ) {
             if (uiState.currentTrack == null) {
-                CameraPreview(
-                    isActive = uiState.isScanning,
-                    onValidResult = onQrScanned
-                )
+                if (!isCameraAvailable) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            "No camera hardware detected.\nCannot scan QR codes.",
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else if (!cameraPermissionGranted) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Camera permission required.",
+                            color = Color.Red,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Button(onClick = onRequestCameraPermission) {
+                            Text("Grant Permission")
+                        }
+                    }
+                } else {
+                    CameraPreview(
+                        isActive = uiState.isScanning,
+                        onValidResult = onQrScanned
+                    )
+                }
             } else {
                 Image(
                     painter = rememberAsyncImagePainter(

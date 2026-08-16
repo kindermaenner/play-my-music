@@ -17,6 +17,8 @@ fun AppNavigation(
     appSettings: AppSettings,
     syncMessage: String?,
     isSyncing: Boolean,
+    isCameraAvailable: Boolean,
+    cameraPermissionGranted: Boolean,
     onQrScanned: (String) -> Unit,
     onPlayPauseToggled: (Boolean) -> Unit,
     onPlaybackError: (String) -> Unit,
@@ -26,7 +28,8 @@ fun AppNavigation(
     onDebugToggle: (Boolean) -> Unit,
     onSettingsSave: (AppSettings) -> Unit,
     onSyncMetadata: () -> Unit,
-    onSyncTracks: () -> Unit
+    onSyncTracks: () -> Unit,
+    onRequestCameraPermission: () -> Unit
 ) {
     NavHost(navController, startDestination = "main") {
 
@@ -35,12 +38,15 @@ fun AppNavigation(
                 uiState = uiState,
                 debugMode = debugMode,
                 appSettings = appSettings,
+                isCameraAvailable = isCameraAvailable,
+                cameraPermissionGranted = cameraPermissionGranted,
                 onQrScanned = onQrScanned,
                 onPlayPauseToggled = onPlayPauseToggled,
                 onPlaybackError = onPlaybackError,
                 onResetToScanner = onResetToScanner,
                 onLoadMappings = onLoadMappings,
-                onOpenSettings = onOpenSettings
+                onOpenSettings = onOpenSettings,
+                onRequestCameraPermission = onRequestCameraPermission
             )
         }
 

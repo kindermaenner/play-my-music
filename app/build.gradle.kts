@@ -1,11 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("jacoco")
-}
-
-configure<JacocoPluginExtension> {
-    toolVersion = "0.8.12"
 }
 
 android {
@@ -40,7 +35,6 @@ android {
 
     buildTypes {
         debug {
-            enableAndroidTestCoverage = true
         }
         release {
             if (!releaseKeystore.isNullOrBlank()) {
@@ -131,32 +125,4 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.rules)
-}
-
-tasks.register<JacocoReport>("connectedDebugAndroidTestCoverageReport") {
-    dependsOn("connectedDebugAndroidTest")
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports for instrumented tests."
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-
-    val buildDir = layout.buildDirectory
-
-    val allDebugClasses = fileTree(buildDir) {
-        include("**/intermediates/**/debug/**/classes/**")
-        include("**/intermediates/kotlin_classes/debug/**")
-        include("**/classes/kotlin/debug/**")
-        exclude("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*")
-    }
-    classDirectories.setFrom(allDebugClasses)
-
-    sourceDirectories.setFrom(files("$projectDir/src/main/java", "$projectDir/src/main/kotlin"))
-
-    executionData.setFrom(fileTree(buildDir) {
-        include("**/outputs/code_coverage/**/*.ec")
-        include("**/outputs/connected_android_test_additional_output/**/*.ec")
-    })
 }

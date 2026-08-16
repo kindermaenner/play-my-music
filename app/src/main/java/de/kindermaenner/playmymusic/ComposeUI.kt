@@ -20,12 +20,15 @@ fun App(
             uiState = MainUiState(),
             debugMode = debugMode,
             appSettings = appSettings,
+            isCameraAvailable = true,
+            cameraPermissionGranted = true,
             onQrScanned = {},
             onPlayPauseToggled = {},
             onPlaybackError = {},
             onResetToScanner = {},
+            onLoadMappings = {},
             onOpenSettings = onOpenSettings,
-            onLoadMappings = {}
+            onRequestCameraPermission = {}
         )
     }
 }

@@ -71,19 +71,17 @@ class SettingsScreenFlowTest {
         composeTestRule.onNodeWithTag("save_button").performClick()
         composeTestRule.logVisibleStates()
 
-        composeTestRule.runOnIdle {
-            val result = savedSettings
-            assertNotNull(result)
-            assertEquals("10.0.0.8", result!!.playback.nasAddress)
-            assertEquals("Media\\Party", result.playback.nasBaseFolder)
-            assertEquals("example.org/code/", result.qrValidation)
-            assertEquals("rock", result.mappingFilePostfix)
-            assertEquals(5, result.trackIdPadding)
-            assertEquals("audio", result.trackFolderName)
-            assertEquals("guestuser", result.smbAuth.username)
-            assertEquals("secret", result.smbAuth.password)
-            assertEquals("WORKGROUP", result.smbAuth.domain)
-        }
+        val result = savedSettings
+        assertNotNull(result)
+        assertEquals("10.0.0.8", result!!.playback.nasAddress)
+        assertEquals("Media\\Party", result.playback.nasBaseFolder)
+        assertEquals("example.org/code/", result.qrValidation)
+        assertEquals("rock", result.mappingFilePostfix)
+        assertEquals(5, result.trackIdPadding)
+        assertEquals("audio", result.trackFolderName)
+        assertEquals("guestuser", result.smbAuth.username)
+        assertEquals("secret", result.smbAuth.password)
+        assertEquals("WORKGROUP", result.smbAuth.domain)
     }
 
     @Test
@@ -118,10 +116,8 @@ class SettingsScreenFlowTest {
         composeTestRule.onNodeWithTag("sync_metadata_button").performClick()
         composeTestRule.onNodeWithTag("sync_tracks_button").performClick()
 
-        composeTestRule.runOnIdle {
-            assertEquals(1, metadataSyncCalls)
-            assertEquals(1, trackSyncCalls)
-        }
+        assertEquals(1, metadataSyncCalls)
+        assertEquals(1, trackSyncCalls)
     }
 
     @Test
@@ -155,9 +151,7 @@ class SettingsScreenFlowTest {
 
         composeTestRule.onNodeWithTag("back_button").performClick()
 
-        composeTestRule.runOnIdle {
-            assertEquals(1, backCalls)
-        }
+        assertEquals(1, backCalls)
     }
 
     private fun scrollToBottom() {

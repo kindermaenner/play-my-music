@@ -68,17 +68,20 @@ sonar {
         property("sonar.token", System.getenv("SONAR_TOKEN") ?: "")
         
         // Point Sonar to Kover's aggregated XML report and JaCoCo instrumented reports
-        property("sonar.coverage.jacoco.xmlReportPaths", listOf(
-            "${layout.buildDirectory.get()}/reports/kover/report.xml",
-            "${project(":app").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml",
-            "${project(":data").layout.buildDirectory.get()}/reports/jacoco/connectedDebugAndroidTestCoverageReport/connectedDebugAndroidTestCoverageReport.xml"
-        ).joinToString(","))
+        // We use wildcards to find all JaCoCo reports in all subprojects
+        property("sonar.coverage.jacoco.xmlReportPaths", "${layout.buildDirectory.get()}/reports/kover/report.xml,**/reports/jacoco/**/*.xml")
     }
 }
 
 
 subprojects {
+    apply(plugin = "jacoco")
     apply(plugin = "org.jetbrains.kotlinx.kover")
+
+    // Global Jacoco configuration
+    extensions.configure<JacocoPluginExtension> {
+        toolVersion = "0.8.12"
+    }
 
     pluginManager.withPlugin("org.sonarqube") {
         extensions.configure<org.sonarqube.gradle.SonarExtension> {
@@ -103,7 +106,17 @@ subprojects {
                 abortOnError = false
                 checkReleaseBuilds = false
             }
+            buildTypes {
+                getByName("debug") {
+                    enableAndroidTestCoverage = true
+                }
+            }
+            defaultConfig {
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
         }
+
+        setupJacocoAndroidTestReport()
     }
 
     // Konfiguration für Android-Library-Module
@@ -113,6 +126,55 @@ subprojects {
                 abortOnError = false
                 checkReleaseBuilds = false
             }
+            buildTypes {
+                getByName("debug") {
+                    enableAndroidTestCoverage = true
+                }
+            }
+            defaultConfig {
+                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
         }
+
+        setupJacocoAndroidTestReport()
+    }
+}
+
+fun Project.setupJacocoAndroidTestReport() {
+    val reportTask = tasks.register<JacocoReport>("connectedDebugAndroidTestCoverageReport") {
+        dependsOn("connectedDebugAndroidTest")
+        group = "Reporting"
+        description = "Generate Jacoco coverage reports for instrumented tests."
+
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+
+        val buildDir = layout.buildDirectory
+
+        classDirectories.setFrom(fileTree(buildDir) {
+            include("**/intermediates/**/debug/**/classes/**")
+            include("**/intermediates/kotlin_classes/debug/**")
+            include("**/classes/kotlin/debug/**")
+            exclude("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*")
+        })
+
+        sourceDirectories.setFrom(files("$projectDir/src/main/java", "$projectDir/src/main/kotlin"))
+
+        executionData.setFrom(fileTree(buildDir) {
+            include("**/outputs/code_coverage/**/*.ec")
+            include("**/outputs/connected_android_test_additional_output/**/*.ec")
+        })
+
+        // Skip the task if no execution data is found (e.g. module has no instrumented tests)
+        onlyIf {
+            executionData.asFileTree.any { it.exists() }
+        }
+    }
+
+    // Ensure the report is generated automatically after tests are run
+    tasks.matching { it.name == "connectedDebugAndroidTest" }.configureEach {
+        finalizedBy(reportTask)
     }
 }

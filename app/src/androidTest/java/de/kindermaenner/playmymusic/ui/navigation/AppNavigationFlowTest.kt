@@ -37,6 +37,8 @@ class AppNavigationFlowTest {
                     appSettings = sampleSettings(),
                     syncMessage = null,
                     isSyncing = false,
+                    isCameraAvailable = true,
+                    cameraPermissionGranted = true,
                     onQrScanned = {},
                     onPlayPauseToggled = {},
                     onPlaybackError = {},
@@ -46,7 +48,8 @@ class AppNavigationFlowTest {
                     onDebugToggle = {},
                     onSettingsSave = { saveCalls += 1 },
                     onSyncMetadata = { backSyncMetadataCalls += 1 },
-                    onSyncTracks = { backSyncTracksCalls += 1 }
+                    onSyncTracks = { backSyncTracksCalls += 1 },
+                    onRequestCameraPermission = {}
                 )
             }
         }
