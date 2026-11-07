@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +59,8 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val offlineLibraryStorage = remember(context) { OfflineLibraryStorage(context) }
+    var showOfflineHint by rememberSaveable { mutableStateOf(true) }
+    val hasOfflineData = remember(context) { offlineLibraryStorage.localMappingFiles().isNotEmpty() }
     
     val player = remember(context, appSettings.smbAuth.username, appSettings.smbAuth.password, appSettings.smbAuth.domain) {
         val dataSourceFactory = DefaultDataSource.Factory(
@@ -237,6 +240,32 @@ fun MainScreen(
                 },
                 modifier = Modifier.weight(1f)
             )
+        }
+
+        if (showOfflineHint && !hasOfflineData && uiState.currentTrack == null) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = UiConstants.Surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+                    .testTag("offline_onboarding_hint")
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Tipp: Du kannst deine Musik in den Einstellungen für unterwegs herunterladen.",
+                        color = UiConstants.NeonGreen,
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { showOfflineHint = false }) {
+                        Text("OK", color = UiConstants.NeonGreen)
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))

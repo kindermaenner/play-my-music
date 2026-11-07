@@ -157,6 +157,32 @@ class SettingsScreenFlowTest {
         assertEquals(1, backCalls)
     }
 
+    @Test
+    fun syncProgress_displaysProgressBarAndText() {
+        composeTestRule.setContent {
+            MaterialTheme {
+                SettingsScreen(
+                    debugMode = false,
+                    appSettings = sampleSettings(),
+                    syncMessage = null,
+                    syncProgress = de.kindermaenner.playmymusic.offline.SyncProgress(10, 100, "song.mp3"),
+                    isSyncing = true,
+                    notificationPermissionGranted = false,
+                    onDebugToggle = {},
+                    onSave = {},
+                    onSyncMetadata = {},
+                    onSyncTracks = {},
+                    onBack = {}
+                )
+            }
+        }
+
+        scrollToBottom()
+        composeTestRule.onNodeWithTag("sync_progress_bar").assertExists()
+        composeTestRule.onNodeWithTag("sync_progress_text").assertExists()
+        composeTestRule.onNodeWithTag("notification_permission_hint").assertExists()
+    }
+
     private fun scrollToBottom() {
         repeat(3) {
             composeTestRule.onNodeWithTag("state_settings_screen")

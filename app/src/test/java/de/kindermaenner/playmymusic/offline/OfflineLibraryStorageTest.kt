@@ -39,6 +39,15 @@ class OfflineLibraryStorageTest {
     }
 
     @Test
+    fun `editionDir strips trailing slashes from directory names`() {
+        val dirFromSmb = storage.editionDir("MyEdition/")
+        val dirFromBackslash = storage.editionDir("MyEdition\\")
+        val dirNormal = storage.editionDir("MyEdition")
+        assertEquals("MyEdition", dirFromSmb.name)
+        assertEquals("MyEdition", dirFromBackslash.name)
+        assertEquals(dirNormal.name, dirFromSmb.name)
+    }
+    @Test
     fun `resolveLocalTrackFile returns file if it exists`() {
         val edition = "MyEdition"
         val editionDir = File(File(rootDir, "offline-library/editions"), edition)

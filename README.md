@@ -79,7 +79,7 @@ Each mapping file contains:
 
 If a track does not define `nasLocation`, the app builds the playback path as:
 
-`<nasAddress>\<nasBaseFolder>\<edition>\<paddedTrackId>.mp3`
+`<nasAddress>\<nasBaseFolder>\<edition>\<trackFolderName>\<paddedTrackId>.mp3`
 
 If `nasLocation` is present, the app uses:
 

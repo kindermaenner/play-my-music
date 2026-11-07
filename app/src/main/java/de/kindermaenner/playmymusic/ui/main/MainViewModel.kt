@@ -1,5 +1,6 @@
 package de.kindermaenner.playmymusic.ui.main
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.kindermaenner.playmymusic.data.mapping.JsonMappingRepository
@@ -8,6 +9,9 @@ import de.kindermaenner.playmymusic.domain.usecase.IdentifyTrackUseCase
 import de.kindermaenner.playmymusic.domain.usecase.ResolveTrackUriUseCase
 import de.kindermaenner.playmymusic.mapping.AssetMappingLoader
 import de.kindermaenner.playmymusic.offline.OfflineLibrarySyncService
+import de.kindermaenner.playmymusic.offline.OfflineSyncManager
+import de.kindermaenner.playmymusic.offline.SyncForegroundService
+import de.kindermaenner.playmymusic.offline.SyncProgress
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,11 +40,19 @@ class MainViewModel(
     val appSettings: StateFlow<AppSettings> = repo.appSettings
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
 
-    private val _syncMessage = MutableStateFlow<String?>(null)
-    val syncMessage: StateFlow<String?> = _syncMessage.asStateFlow()
+    val syncMessage: StateFlow<String?> = OfflineSyncManager.syncMessage
+    val syncProgress: StateFlow<SyncProgress?> = OfflineSyncManager.syncProgress
+    val isSyncing: StateFlow<Boolean> = OfflineSyncManager.isSyncing
 
-    private val _isSyncing = MutableStateFlow(false)
-    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+    init {
+        viewModelScope.launch {
+            OfflineSyncManager.isSyncing.collect { syncing ->
+                if (!syncing && OfflineSyncManager.syncMessage.value != null) {
+                    loadMappings()
+                }
+            }
+        }
+    }
 
     fun onQrScanned(qrText: String) {
         val settings = appSettings.value
@@ -97,36 +109,58 @@ class MainViewModel(
         }
     }
 
-    fun syncMetadata() {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            _syncMessage.value = runCatching {
-                offlineSyncService.syncMetadata(appSettings.value)
-            }.fold(
-                onSuccess = { 
-                    loadMappings()
-                    it.message 
-                },
-                onFailure = { it.message ?: "Metadata sync failed" }
-            )
-            _isSyncing.value = false
+    fun syncMetadata(context: Context? = null) {
+        if (context != null) {
+            SyncForegroundService.startSync(context, appSettings.value, includeTracks = false)
+        } else {
+            viewModelScope.launch {
+                OfflineSyncManager.setSyncing(true)
+                OfflineSyncManager.clearMessage()
+                val result = runCatching {
+                    offlineSyncService.syncMetadata(appSettings.value)
+                }
+                OfflineSyncManager.setSyncing(false)
+                result.fold(
+                    onSuccess = {
+                        loadMappings()
+                        OfflineSyncManager.setMessage(it.message)
+                    },
+                    onFailure = {
+                        OfflineSyncManager.setMessage(it.message ?: "Metadata sync failed")
+                    }
+                )
+            }
         }
     }
 
-    fun syncTracks() {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            _syncMessage.value = runCatching {
-                offlineSyncService.syncTracks(appSettings.value)
-            }.fold(
-                onSuccess = { it.message },
-                onFailure = { it.message ?: "Track sync failed" }
-            )
-            _isSyncing.value = false
+    fun syncTracks(context: Context? = null) {
+        if (context != null) {
+            SyncForegroundService.startSync(context, appSettings.value, includeTracks = true)
+        } else {
+            viewModelScope.launch {
+                OfflineSyncManager.setSyncing(true)
+                OfflineSyncManager.clearMessage()
+                val result = runCatching {
+                    offlineSyncService.syncTracks(appSettings.value) {
+                        OfflineSyncManager.updateProgress(it)
+                    }
+                }
+                OfflineSyncManager.setSyncing(false)
+                OfflineSyncManager.updateProgress(null)
+                result.fold(
+                    onSuccess = {
+                        loadMappings()
+                        OfflineSyncManager.setMessage(it.message)
+                    },
+                    onFailure = {
+                        OfflineSyncManager.setMessage(it.message ?: "Track sync failed")
+                    }
+                )
+            }
         }
     }
 
     fun clearSyncMessage() {
-        _syncMessage.value = null
+        OfflineSyncManager.clearMessage()
     }
 }

@@ -2,6 +2,7 @@ package de.kindermaenner.playmymusic.data
 
 import de.kindermaenner.playmymusic.domain.model.Track
 import de.kindermaenner.playmymusic.offline.OfflineLibraryStorage
+import de.kindermaenner.playmymusic.settings.AppSettings
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -49,6 +50,30 @@ class AppLocalTrackResolverTest {
     }
 
     @Test
+    fun `dynamic settings provider reflects updated padding and folder name`() {
+        var currentSettings = AppSettings(trackIdPadding = 2, trackFolderName = "songs")
+        val dynamicResolver = AppLocalTrackResolver(
+            storage = storage,
+            settingsProvider = { currentSettings }
+        )
+
+        val songsDir = File(editionDir, "songs").apply { mkdirs() }
+        val songFile = File(songsDir, "42.mp3").apply { writeText("song") }
+
+        val track = createTrack(id = 42, edition = "EditionName")
+        val resolved = dynamicResolver.resolveLocalUri(track)
+        assertEquals(songFile.toURI().toString(), resolved)
+
+        // Now update padding to 4
+        currentSettings = AppSettings(trackIdPadding = 4, trackFolderName = "songs")
+        assertNull(dynamicResolver.resolveLocalUri(track)) // 0042.mp3 does not exist yet
+
+        val paddedFile = File(songsDir, "0042.mp3").apply { writeText("padded song") }
+        val resolvedPadded = dynamicResolver.resolveLocalUri(track)
+        assertEquals(paddedFile.toURI().toString(), resolvedPadded)
+    }
+
+    @Test
     fun `returns null if standard local path file does not exist`() {
         val track = createTrack(id = 42, edition = "EditionName")
         
@@ -60,7 +85,7 @@ class AppLocalTrackResolverTest {
     @Test
     fun `resolves explicit nasLocation if file exists`() {
         val explicitFile = File(editionDir, "special/path.mp3")
-        explicitFile.parentFile.mkdirs()
+        explicitFile.parentFile?.mkdirs()
         explicitFile.writeText("content")
 
         val track = createTrack(edition = "EditionName", nasLocation = "special\\path.mp3")

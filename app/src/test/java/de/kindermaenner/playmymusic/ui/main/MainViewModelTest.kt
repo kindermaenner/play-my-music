@@ -1,20 +1,18 @@
 package de.kindermaenner.playmymusic.ui.main
 
 import de.kindermaenner.playmymusic.data.mapping.JsonMappingRepository
+import de.kindermaenner.playmymusic.domain.model.Track
 import de.kindermaenner.playmymusic.domain.usecase.IdentifyTrackUseCase
 import de.kindermaenner.playmymusic.domain.usecase.ResolveTrackUriUseCase
 import de.kindermaenner.playmymusic.mapping.AssetMappingLoader
 import de.kindermaenner.playmymusic.offline.OfflineLibrarySyncService
 import de.kindermaenner.playmymusic.offline.SyncResult
-import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SettingsRepository
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -39,8 +37,6 @@ class MainViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        every { repo.debugMode } returns flowOf(false)
-        every { repo.appSettings } returns flowOf(AppSettings())
         viewModel = MainViewModel(
             repo = repo,
             offlineSyncService = syncService,
@@ -57,16 +53,28 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `toggleDebugMode calls repo`() {
-        viewModel.toggleDebugMode(true)
-        coVerify { repo.setDebugMode(true) }
+    fun `onQrScanned updates state with track and uri on success`() {
+        val track = Track(1, "Title", "Artist", 2024, "Ed", "E", "url", "img", "")
+        every { identifyTrackUseCase(any(), any()) } returns track
+        every { resolveTrackUriUseCase(any(), any()) } returns "file://path"
+
+        viewModel.onQrScanned("valid_qr")
+
+        val state = viewModel.uiState.value
+        assertEquals(track, state.currentTrack)
+        assertEquals("file://path", state.playbackUri)
+        assertEquals(false, state.isScanning)
+        assertEquals(null, state.error)
     }
 
     @Test
-    fun `saveSettings calls repo`() {
-        val settings = AppSettings(qrValidation = "new")
-        viewModel.saveSettings(settings)
-        coVerify { repo.setAppSettings(settings) }
+    fun `onQrScanned sets error when track not found`() {
+        every { identifyTrackUseCase(any(), any()) } returns null
+
+        viewModel.onQrScanned("invalid_qr")
+
+        val state = viewModel.uiState.value
+        assertEquals("Invalid QR or Track not found", state.error)
     }
 
     @Test
@@ -81,7 +89,7 @@ class MainViewModelTest {
 
     @Test
     fun `syncTracks updates state correctly`() {
-        coEvery { syncService.syncTracks(any()) } returns SyncResult("Done")
+        coEvery { syncService.syncTracks(any(), any()) } returns SyncResult("Done")
         
         viewModel.syncTracks()
         

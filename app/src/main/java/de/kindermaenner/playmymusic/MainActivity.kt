@@ -2,6 +2,7 @@ package de.kindermaenner.playmymusic
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,8 +23,6 @@ import de.kindermaenner.playmymusic.settings.SettingsRepository
 import de.kindermaenner.playmymusic.ui.main.MainViewModel
 import de.kindermaenner.playmymusic.ui.navigation.AppNavigation
 import de.kindermaenner.playmymusic.ui.theme.PlayMyMusicTheme
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
 
@@ -35,21 +34,22 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val settings = runBlocking { settingsRepo.appSettings.first() }
+                lateinit var vm: MainViewModel
                 val localResolver = AppLocalTrackResolver(
                     storage = de.kindermaenner.playmymusic.offline.OfflineLibraryStorage(this@MainActivity),
-                    trackIdPadding = settings.trackIdPadding,
-                    trackFolderName = settings.trackFolderName
+                    settingsProvider = { vm.appSettings.value }
                 )
                 
-                return MainViewModel(
+                vm = MainViewModel(
                     repo = settingsRepo,
                     offlineSyncService = offlineSyncService,
                     mappingRepository = mappingRepository,
                     assetMappingLoader = assetMappingLoader,
                     identifyTrackUseCase = IdentifyTrackUseCase(mappingRepository),
                     resolveTrackUriUseCase = ResolveTrackUriUseCase(localResolver)
-                ) as T
+                )
+                @Suppress("UNCHECKED_CAST")
+                return vm as T
             }
         }
     }
@@ -57,9 +57,16 @@ class MainActivity : ComponentActivity() {
     private var hasCameraPermission by mutableStateOf(false)
     private var isCameraAvailable by mutableStateOf(true)
 
-    private val requestPermissionLauncher =
+    private val requestCameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             hasCameraPermission = granted
+        }
+
+    private var hasNotificationPermission by mutableStateOf(false)
+
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            hasNotificationPermission = granted
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,8 +75,14 @@ class MainActivity : ComponentActivity() {
         isCameraAvailable = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
         hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
+        hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
         if (!hasCameraPermission && isCameraAvailable) {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
         renderApp()
@@ -83,6 +96,7 @@ class MainActivity : ComponentActivity() {
                 val debugMode by viewModel.debugMode.collectAsState()
                 val appSettings by viewModel.appSettings.collectAsState()
                 val syncMessage by viewModel.syncMessage.collectAsState()
+                val syncProgress by viewModel.syncProgress.collectAsState()
                 val isSyncing by viewModel.isSyncing.collectAsState()
 
                 AppNavigation(
@@ -91,9 +105,11 @@ class MainActivity : ComponentActivity() {
                     debugMode = debugMode,
                     appSettings = appSettings,
                     syncMessage = syncMessage,
+                    syncProgress = syncProgress,
                     isSyncing = isSyncing,
                     isCameraAvailable = isCameraAvailable,
                     cameraPermissionGranted = hasCameraPermission,
+                    notificationPermissionGranted = hasNotificationPermission,
                     onQrScanned = { viewModel.onQrScanned(it) },
                     onPlayPauseToggled = { viewModel.onPlayPauseToggled(it) },
                     onPlaybackError = { viewModel.onPlaybackError(it) },
@@ -102,10 +118,15 @@ class MainActivity : ComponentActivity() {
                     onOpenSettings = { navController.navigate("settings") },
                     onDebugToggle = { viewModel.toggleDebugMode(it) },
                     onSettingsSave = { viewModel.saveSettings(it) },
-                    onSyncMetadata = { viewModel.syncMetadata() },
-                    onSyncTracks = { viewModel.syncTracks() },
+                    onSyncMetadata = { viewModel.syncMetadata(this@MainActivity) },
+                    onSyncTracks = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission) {
+                            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        viewModel.syncTracks(this@MainActivity)
+                    },
                     onRequestCameraPermission = {
-                        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                     }
                 )
             }

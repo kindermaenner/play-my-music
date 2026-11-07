@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import de.kindermaenner.playmymusic.offline.SyncProgress
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.ui.main.MainScreen
 import de.kindermaenner.playmymusic.ui.main.MainUiState
@@ -16,9 +17,11 @@ fun AppNavigation(
     debugMode: Boolean,
     appSettings: AppSettings,
     syncMessage: String?,
+    syncProgress: SyncProgress? = null,
     isSyncing: Boolean,
     isCameraAvailable: Boolean,
     cameraPermissionGranted: Boolean,
+    notificationPermissionGranted: Boolean = true,
     onQrScanned: (String) -> Unit,
     onPlayPauseToggled: (Boolean) -> Unit,
     onPlaybackError: (String) -> Unit,
@@ -55,7 +58,9 @@ fun AppNavigation(
                 debugMode = debugMode,
                 appSettings = appSettings,
                 syncMessage = syncMessage,
+                syncProgress = syncProgress,
                 isSyncing = isSyncing,
+                notificationPermissionGranted = notificationPermissionGranted,
                 onDebugToggle = onDebugToggle,
                 onSave = { settings ->
                     onSettingsSave(settings)

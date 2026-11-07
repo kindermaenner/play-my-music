@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -25,12 +26,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.kindermaenner.playmymusic.data.model.PlaybackSettings
+import de.kindermaenner.playmymusic.offline.SyncProgress
 import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SmbAuthSettings
 import de.kindermaenner.playmymusic.ui.UiConstants
@@ -41,7 +44,9 @@ fun SettingsScreen(
     debugMode: Boolean,
     appSettings: AppSettings,
     syncMessage: String?,
+    syncProgress: SyncProgress? = null,
     isSyncing: Boolean,
+    notificationPermissionGranted: Boolean = true,
     onDebugToggle: (Boolean) -> Unit,
     onSave: (AppSettings) -> Unit,
     onSyncMetadata: () -> Unit,
@@ -276,6 +281,36 @@ fun SettingsScreen(
         )
 
         Spacer(Modifier.height(16.dp))
+
+        if (!notificationPermissionGranted) {
+            Text(
+                text = "Hinweis: Ohne Benachrichtigungsberechtigung kann der Sync bei gesperrtem Bildschirm vom System pausiert werden.",
+                color = Color.Yellow,
+                fontSize = 14.sp,
+                modifier = Modifier.testTag("notification_permission_hint")
+            )
+            Spacer(Modifier.height(12.dp))
+        }
+
+        if (syncProgress != null && syncProgress.total > 0) {
+            val progressFraction = syncProgress.current.toFloat() / syncProgress.total.coerceAtLeast(1)
+            LinearProgressIndicator(
+                progress = { progressFraction },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("sync_progress_bar"),
+                color = UiConstants.NeonGreen,
+                trackColor = UiConstants.Surface
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "${syncProgress.current} / ${syncProgress.total} Tracks (${(progressFraction * 100).toInt()}%) - ${syncProgress.currentItem}",
+                modifier = Modifier.testTag("sync_progress_text"),
+                color = UiConstants.NeonGreen,
+                fontSize = 14.sp
+            )
+            Spacer(Modifier.height(16.dp))
+        }
 
         if (syncMessage != null) {
             Text(

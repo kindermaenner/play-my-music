@@ -72,6 +72,6 @@ class OfflineLibraryStorage(private val context: Context) {
     }
 
     private fun sanitize(input: String): String {
-        return input.trim().replace(Regex("[^A-Za-z0-9._ -]"), "_")
+        return input.trim().trimEnd('/', '\\').replace(Regex("[^A-Za-z0-9._ -]"), "_")
     }
 }
