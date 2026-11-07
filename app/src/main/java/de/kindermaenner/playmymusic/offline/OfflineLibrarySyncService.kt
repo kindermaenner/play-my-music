@@ -9,6 +9,7 @@ import jcifs.CIFSContext
 import jcifs.context.SingletonContext
 import jcifs.smb.NtlmPasswordAuthenticator
 import jcifs.smb.SmbFile
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,13 +30,22 @@ data class SyncResult(
     val totalTracks: Int = 0
 )
 
-class OfflineLibrarySyncService(private val context: Context) {
+private data class EditionSyncCount(
+    val mappingsCount: Int,
+    val imagesCount: Int,
+    val tracksCount: Int
+)
+
+class OfflineLibrarySyncService(
+    private val context: Context,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) {
 
     private val gson = Gson()
     private val storage = OfflineLibraryStorage(context)
 
     suspend fun syncMetadata(settings: AppSettings): SyncResult {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             sync(settings = settings, includeTracks = false)
         }
     }
@@ -44,7 +54,7 @@ class OfflineLibrarySyncService(private val context: Context) {
         settings: AppSettings,
         onProgress: ((SyncProgress) -> Unit)? = null
     ): SyncResult {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             sync(settings = settings, includeTracks = true, onProgress = onProgress)
         }
     }
@@ -57,79 +67,33 @@ class OfflineLibrarySyncService(private val context: Context) {
         val root = resolveBaseDirectory(settings)
         val editionDirectories = root.listFiles().orEmpty().filter { it.isDirectory }
 
+        val tracksFolderName = settings.trackFolderName.ifBlank { "tracks" }
+        val totalTracks = if (includeTracks) countTotalTracks(editionDirectories, tracksFolderName) else 0
+
         var copiedMappings = 0
         var copiedImages = 0
         var copiedTracks = 0
-
-        // Pre-count total audio tracks for progress reporting
-        val tracksFolderName = settings.trackFolderName.ifBlank { "tracks" }
-        val allTrackFiles = if (includeTracks) {
-            editionDirectories.flatMap { edDir ->
-                val remoteTracks = SmbFile(edDir, "$tracksFolderName/")
-                if (remoteTracks.exists() && remoteTracks.isDirectory) {
-                    remoteTracks.listFiles().orEmpty().filter { !it.isDirectory }
-                } else emptyList()
-            }
-        } else emptyList()
-
-        val totalTracks = allTrackFiles.size
         var currentTrackIndex = 0
 
         editionDirectories.forEach { editionDirectory ->
-            val rawName = editionDirectory.name.trim().trimEnd('/', '\\')
-            val initialTargetDir = storage.editionDir(rawName).apply { mkdirs() }
-            val mappingFile = editionDirectory.listFiles().orEmpty()
-                .firstOrNull { it.isFile && it.name.endsWith(".json", ignoreCase = true) }
-                ?: return@forEach
-
-            val localMappingFile = File(initialTargetDir, mappingFile.name)
-            copySmbFileAtomic(mappingFile, localMappingFile)
-            copiedMappings += 1
-
-            val mapping = runCatching {
-                gson.fromJson(localMappingFile.readText(), MappingFile::class.java)
-            }.getOrNull()
-
-            val editionFromMeta = mapping?.meta?.edition?.trim().orEmpty()
-            val targetEditionDirectory = if (editionFromMeta.isNotBlank()) {
-                val metaDir = storage.editionDir(editionFromMeta).apply { mkdirs() }
-                if (metaDir.absolutePath != initialTargetDir.absolutePath) {
-                    localMappingFile.copyTo(File(metaDir, mappingFile.name), overwrite = true)
-                }
-                metaDir
-            } else {
-                initialTargetDir
-            }
-
-            val imageName = mapping?.meta?.image?.trim().orEmpty()
-            if (imageName.isNotBlank()) {
-                val imageSource = SmbFile(editionDirectory, imageName)
-                if (imageSource.exists()) {
-                    copySmbFileAtomic(imageSource, File(targetEditionDirectory, imageName))
-                    copiedImages += 1
-                }
-            }
-
-            if (includeTracks) {
-                val remoteTracksDirectory = SmbFile(editionDirectory, "$tracksFolderName/")
-                if (remoteTracksDirectory.exists() && remoteTracksDirectory.isDirectory) {
-                    val targetTracksDir = File(targetEditionDirectory, tracksFolderName)
-                    copiedTracks += copyDirectoryRecursive(
-                        sourceDirectory = remoteTracksDirectory,
-                        targetDirectory = targetTracksDir,
-                        onFileCopied = { file ->
-                            currentTrackIndex++
-                            onProgress?.invoke(
-                                SyncProgress(
-                                    current = currentTrackIndex,
-                                    total = totalTracks,
-                                    currentItem = file.name.trimEnd('/', '\\')
-                                )
-                            )
-                        }
+            val editionCount = syncSingleEdition(
+                editionDirectory = editionDirectory,
+                tracksFolderName = tracksFolderName,
+                includeTracks = includeTracks,
+                onTrackCopied = { file ->
+                    currentTrackIndex++
+                    onProgress?.invoke(
+                        SyncProgress(
+                            current = currentTrackIndex,
+                            total = totalTracks,
+                            currentItem = file.name.trimEnd('/', '\\')
+                        )
                     )
                 }
-            }
+            )
+            copiedMappings += editionCount.mappingsCount
+            copiedImages += editionCount.imagesCount
+            copiedTracks += editionCount.tracksCount
         }
 
         val message = if (includeTracks) {
@@ -144,6 +108,102 @@ class OfflineLibrarySyncService(private val context: Context) {
             copiedImages = copiedImages,
             copiedTracks = copiedTracks,
             totalTracks = totalTracks
+        )
+    }
+
+    private fun countTotalTracks(editionDirectories: List<SmbFile>, tracksFolderName: String): Int {
+        return editionDirectories.sumOf { edDir ->
+            val remoteTracks = SmbFile(edDir, "$tracksFolderName/")
+            if (remoteTracks.exists() && remoteTracks.isDirectory) {
+                remoteTracks.listFiles().orEmpty().count { !it.isDirectory }
+            } else {
+                0
+            }
+        }
+    }
+
+    private fun syncSingleEdition(
+        editionDirectory: SmbFile,
+        tracksFolderName: String,
+        includeTracks: Boolean,
+        onTrackCopied: (SmbFile) -> Unit
+    ): EditionSyncCount {
+        val rawName = editionDirectory.name.trim().trimEnd('/', '\\')
+        val initialTargetDir = storage.editionDir(rawName).apply { mkdirs() }
+        val mappingFile = editionDirectory.listFiles().orEmpty()
+            .firstOrNull { it.isFile && it.name.endsWith(".json", ignoreCase = true) }
+            ?: return EditionSyncCount(0, 0, 0)
+
+        val localMappingFile = File(initialTargetDir, mappingFile.name)
+        copySmbFileAtomic(mappingFile, localMappingFile)
+
+        val mapping = runCatching {
+            gson.fromJson(localMappingFile.readText(), MappingFile::class.java)
+        }.getOrNull()
+
+        val targetEditionDirectory = resolveTargetEditionDir(initialTargetDir, localMappingFile, mapping)
+        val imagesCount = syncEditionImage(editionDirectory, targetEditionDirectory, mapping)
+        val tracksCount = if (includeTracks) {
+            syncEditionTracks(editionDirectory, targetEditionDirectory, tracksFolderName, onTrackCopied)
+        } else {
+            0
+        }
+
+        return EditionSyncCount(
+            mappingsCount = 1,
+            imagesCount = imagesCount,
+            tracksCount = tracksCount
+        )
+    }
+
+    private fun resolveTargetEditionDir(
+        initialTargetDir: File,
+        localMappingFile: File,
+        mapping: MappingFile?
+    ): File {
+        val editionFromMeta = mapping?.meta?.edition?.trim().orEmpty()
+        if (editionFromMeta.isBlank()) return initialTargetDir
+
+        val metaDir = storage.editionDir(editionFromMeta).apply { mkdirs() }
+        if (metaDir.absolutePath != initialTargetDir.absolutePath) {
+            localMappingFile.copyTo(File(metaDir, localMappingFile.name), overwrite = true)
+        }
+        return metaDir
+    }
+
+    private fun syncEditionImage(
+        editionDirectory: SmbFile,
+        targetEditionDirectory: File,
+        mapping: MappingFile?
+    ): Int {
+        val imageName = mapping?.meta?.image?.trim().orEmpty()
+        if (imageName.isBlank()) return 0
+
+        val imageSource = SmbFile(editionDirectory, imageName)
+        return if (imageSource.exists()) {
+            val copied = copySmbFileAtomic(imageSource, File(targetEditionDirectory, imageName))
+            if (copied) 1 else 0
+        } else {
+            0
+        }
+    }
+
+    private fun syncEditionTracks(
+        editionDirectory: SmbFile,
+        targetEditionDirectory: File,
+        tracksFolderName: String,
+        onTrackCopied: (SmbFile) -> Unit
+    ): Int {
+        val remoteTracksDirectory = SmbFile(editionDirectory, "$tracksFolderName/")
+        if (!remoteTracksDirectory.exists() || !remoteTracksDirectory.isDirectory) {
+            return 0
+        }
+
+        val targetTracksDir = File(targetEditionDirectory, tracksFolderName)
+        return copyDirectoryRecursive(
+            sourceDirectory = remoteTracksDirectory,
+            targetDirectory = targetTracksDir,
+            onFileCopied = onTrackCopied
         )
     }
 
@@ -241,18 +301,23 @@ class OfflineLibrarySyncService(private val context: Context) {
         }
 
         if (tempFile.exists()) {
-            if (target.exists()) {
-                target.delete()
+            if (target.exists() && !target.delete()) {
+                logWarning("Failed to delete existing target file before replacement: ${target.absolutePath}")
             }
             if (!tempFile.renameTo(target)) {
                 tempFile.copyTo(target, overwrite = true)
-                tempFile.delete()
+                if (!tempFile.delete()) {
+                    logWarning("Failed to delete temporary file: ${tempFile.absolutePath}")
+                }
             }
         }
 
         val remoteTime = source.lastModified()
         if (remoteTime > 0) {
-            target.setLastModified(remoteTime)
+            val updated = target.setLastModified(remoteTime)
+            if (!updated) {
+                logWarning("Failed to set lastModified timestamp on: ${target.absolutePath}")
+            }
         }
         return true
     }
@@ -264,6 +329,10 @@ class OfflineLibrarySyncService(private val context: Context) {
         val remoteTime = source.lastModified()
         val localTime = target.lastModified()
         return remoteTime <= 0 || Math.abs(remoteTime - localTime) < 2000
+    }
+
+    private fun logWarning(message: String) {
+        System.err.println("OfflineLibrarySyncService: $message")
     }
 
     private fun Array<out SmbFile>?.orEmpty(): List<SmbFile> = this?.toList() ?: emptyList()

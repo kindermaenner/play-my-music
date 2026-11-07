@@ -84,12 +84,7 @@ class SyncForegroundService : Service() {
                 }
             )
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-            } else {
-                @Suppress("DEPRECATION")
-                stopForeground(true)
-            }
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
 
@@ -123,17 +118,15 @@ class SyncForegroundService : Service() {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Offline Synchronisation",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Fortschritt der Offline-Musik-Synchronisation"
-            }
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Offline Synchronisation",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Fortschritt der Offline-Musik-Synchronisation"
         }
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
     }
 
     companion object {
@@ -147,11 +140,7 @@ class SyncForegroundService : Service() {
                 putExtra(EXTRA_SETTINGS_JSON, Gson().toJson(settings))
                 putExtra(EXTRA_INCLUDE_TRACKS, includeTracks)
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
+            context.startForegroundService(intent)
         }
     }
 }
