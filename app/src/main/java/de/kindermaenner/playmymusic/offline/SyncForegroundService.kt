@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import de.kindermaenner.playmymusic.R
 import de.kindermaenner.playmymusic.settings.AppSettings
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,12 +21,15 @@ import kotlinx.coroutines.launch
 
 class SyncForegroundService : Service() {
 
-    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private lateinit var syncService: OfflineLibrarySyncService
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val serviceScope by lazy { CoroutineScope(ioDispatcher + SupervisorJob()) }
+    internal var syncService: OfflineLibrarySyncService? = null
 
     override fun onCreate() {
         super.onCreate()
-        syncService = OfflineLibrarySyncService(this)
+        if (syncService == null) {
+            syncService = OfflineLibrarySyncService(this)
+        }
         createNotificationChannel()
     }
 
@@ -54,9 +58,10 @@ class SyncForegroundService : Service() {
         OfflineSyncManager.clearMessage()
 
         serviceScope.launch {
+            val service = syncService ?: OfflineLibrarySyncService(this@SyncForegroundService)
             val result = runCatching {
                 if (includeTracks) {
-                    syncService.syncTracks(settings) { progress ->
+                    service.syncTracks(settings) { progress ->
                         OfflineSyncManager.updateProgress(progress)
                         val notification = buildNotification(
                             content = "${progress.current} / ${progress.total} Tracks (${progress.currentItem})",
@@ -68,7 +73,7 @@ class SyncForegroundService : Service() {
                         notificationManager.notify(NOTIFICATION_ID, notification)
                     }
                 } else {
-                    syncService.syncMetadata(settings)
+                    service.syncMetadata(settings)
                 }
             }
 

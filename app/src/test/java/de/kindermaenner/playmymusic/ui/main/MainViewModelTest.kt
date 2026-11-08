@@ -7,10 +7,13 @@ import de.kindermaenner.playmymusic.domain.usecase.ResolveTrackUriUseCase
 import de.kindermaenner.playmymusic.mapping.AssetMappingLoader
 import de.kindermaenner.playmymusic.offline.OfflineLibrarySyncService
 import de.kindermaenner.playmymusic.offline.SyncResult
+import de.kindermaenner.playmymusic.settings.AppSettings
 import de.kindermaenner.playmymusic.settings.SettingsRepository
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -18,6 +21,9 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -63,8 +69,8 @@ class MainViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(track, state.currentTrack)
         assertEquals("file://path", state.playbackUri)
-        assertEquals(false, state.isScanning)
-        assertEquals(null, state.error)
+        assertFalse(state.isScanning)
+        assertNull(state.error)
     }
 
     @Test
@@ -78,23 +84,113 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `syncMetadata updates state correctly`() {
+    fun `onQrScanned sets error when track uri cannot be resolved`() {
+        val track = Track(1, "Title", "Artist", 2024, "Ed", "E", "url", "img", "")
+        every { identifyTrackUseCase(any(), any()) } returns track
+        every { resolveTrackUriUseCase(any(), any()) } returns null
+
+        viewModel.onQrScanned("valid_qr")
+
+        val state = viewModel.uiState.value
+        assertEquals("Could not resolve track URI", state.error)
+        assertEquals(track, state.currentTrack)
+        assertFalse(state.isScanning)
+        assertNull(state.playbackUri)
+    }
+
+    @Test
+    fun `onPlayPauseToggled updates isPlaying in uiState`() {
+        assertFalse(viewModel.uiState.value.isPlaying)
+
+        viewModel.onPlayPauseToggled(true)
+        assertTrue(viewModel.uiState.value.isPlaying)
+
+        viewModel.onPlayPauseToggled(false)
+        assertFalse(viewModel.uiState.value.isPlaying)
+    }
+
+    @Test
+    fun `onPlaybackError sets error message in uiState`() {
+        viewModel.onPlaybackError("Network playback failed")
+        assertEquals("Network playback failed", viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun `resetToScanner resets scanning state and clears track and error`() {
+        val track = Track(1, "Title", "Artist", 2024, "Ed", "E", "url", "img", "")
+        every { identifyTrackUseCase(any(), any()) } returns track
+        every { resolveTrackUriUseCase(any(), any()) } returns "file://path"
+        viewModel.onQrScanned("qr")
+
+        viewModel.resetToScanner()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isScanning)
+        assertNull(state.currentTrack)
+        assertNull(state.playbackUri)
+        assertNull(state.error)
+    }
+
+    @Test
+    fun `toggleDebugMode updates settings repository`() {
+        viewModel.toggleDebugMode(true)
+        coVerify { repo.setDebugMode(true) }
+    }
+
+    @Test
+    fun `saveSettings updates settings repository`() {
+        val settings = AppSettings(trackIdPadding = 4)
+        viewModel.saveSettings(settings)
+        coVerify { repo.setAppSettings(settings) }
+    }
+
+    @Test
+    fun `loadMappings loads json strings into repository`() {
+        every { assetMappingLoader.loadJsonFiles(any()) } returns listOf("{\"meta\":{}}")
+
+        viewModel.loadMappings()
+
+        verify { mappingRepository.load(listOf("{\"meta\":{}}")) }
+    }
+
+    @Test
+    fun `syncMetadata updates state on success`() {
         coEvery { syncService.syncMetadata(any()) } returns SyncResult("Success")
         
         viewModel.syncMetadata()
         
         assertEquals("Success", viewModel.syncMessage.value)
-        assertEquals(false, viewModel.isSyncing.value)
+        assertFalse(viewModel.isSyncing.value)
     }
 
     @Test
-    fun `syncTracks updates state correctly`() {
+    fun `syncMetadata handles failure and updates state`() {
+        coEvery { syncService.syncMetadata(any()) } throws RuntimeException("Connection timeout")
+
+        viewModel.syncMetadata()
+
+        assertEquals("Connection timeout", viewModel.syncMessage.value)
+        assertFalse(viewModel.isSyncing.value)
+    }
+
+    @Test
+    fun `syncTracks updates state on success`() {
         coEvery { syncService.syncTracks(any(), any()) } returns SyncResult("Done")
         
         viewModel.syncTracks()
         
         assertEquals("Done", viewModel.syncMessage.value)
-        assertEquals(false, viewModel.isSyncing.value)
+        assertFalse(viewModel.isSyncing.value)
+    }
+
+    @Test
+    fun `syncTracks handles failure and updates state`() {
+        coEvery { syncService.syncTracks(any(), any()) } throws RuntimeException("Disk full")
+
+        viewModel.syncTracks()
+
+        assertEquals("Disk full", viewModel.syncMessage.value)
+        assertFalse(viewModel.isSyncing.value)
     }
 
     @Test
@@ -104,6 +200,6 @@ class MainViewModelTest {
         
         viewModel.clearSyncMessage()
         
-        assertEquals(null, viewModel.syncMessage.value)
+        assertNull(viewModel.syncMessage.value)
     }
 }

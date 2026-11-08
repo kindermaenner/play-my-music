@@ -19,7 +19,10 @@ import kotlin.math.min
 class SmbDataSource(
     private val smbUsername: String,
     private val smbPassword: String,
-    private val smbDomain: String
+    private val smbDomain: String,
+    private val fileOpener: (Uri, CIFSContext) -> SmbRandomAccessFile = { uri, ctx ->
+        SmbRandomAccessFile(SmbFile(uri.toString(), ctx), "r")
+    }
 ) : BaseDataSource(false) {
 
     private var randomAccessFile: SmbRandomAccessFile? = null
@@ -59,8 +62,7 @@ class SmbDataSource(
 
         for (context in contexts) {
             try {
-                val smbFile = SmbFile(uri.toString(), context)
-                return SmbRandomAccessFile(smbFile, "r")
+                return fileOpener(uri, context)
             } catch (error: Exception) {
                 lastError = error
             }
@@ -70,7 +72,7 @@ class SmbDataSource(
         throw IOException("SMB open failed for all auth variants: $reason", lastError)
     }
 
-    private fun buildCandidateContexts(): List<CIFSContext> {
+    internal fun buildCandidateContexts(): List<CIFSContext> {
         val baseContext = SingletonContext.getInstance()
         val contexts = mutableListOf<CIFSContext>()
 
@@ -89,7 +91,7 @@ class SmbDataSource(
         return contexts
     }
 
-    private fun buildConfiguredUser(): String {
+    internal fun buildConfiguredUser(): String {
         val trimmedUser = smbUsername.trim()
         if (trimmedUser.isBlank()) {
             return ""

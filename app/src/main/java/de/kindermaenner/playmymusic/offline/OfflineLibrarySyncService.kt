@@ -228,7 +228,7 @@ class OfflineLibrarySyncService(
     }
 
     internal fun buildBaseUri(settings: AppSettings): String {
-        val host = settings.playback.nasAddress.trim().trimStart('\\', '/')
+        val host = settings.playback.nasAddress.trim().trim('\\', '/')
         val baseFolder = settings.playback.nasBaseFolder.trim().replace('\\', '/')
         return if (baseFolder.isBlank()) {
             "smb://$host/"

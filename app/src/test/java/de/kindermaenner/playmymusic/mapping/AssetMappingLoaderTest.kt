@@ -1,15 +1,27 @@
 package de.kindermaenner.playmymusic.mapping
 
 import android.content.Context
-import io.mockk.mockk
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import java.io.File
 
+@RunWith(RobolectricTestRunner::class)
 class AssetMappingLoaderTest {
 
-    private val context = mockk<Context>()
-    private val loader = AssetMappingLoader(context)
+    private lateinit var context: Context
+    private lateinit var loader: AssetMappingLoader
+
+    @Before
+    fun setUp() {
+        context = ApplicationProvider.getApplicationContext()
+        loader = AssetMappingLoader(context)
+    }
 
     @Test
     fun `matchesFileFilter returns true for empty filter`() {
@@ -32,5 +44,20 @@ class AssetMappingLoaderTest {
     fun `matchesFileFilter returns false for non-matching strings`() {
         assertFalse(loader.matchesFileFilter("rock.json", "pop"))
         assertFalse(loader.matchesFileFilter("mapping_1.json", "mapping_2"))
+    }
+
+    @Test
+    fun `loadJsonFiles includes matching offline mapping files`() {
+        val offlineDir = File(context.filesDir, "offline-library/editions/EditionA").apply { mkdirs() }
+        val matchingFile = File(offlineDir, "game_de.json").apply { writeText("{\"edition\":\"EditionA\"}") }
+        val nonMatchingFile = File(offlineDir, "game_en.json").apply { writeText("{\"edition\":\"EditionEn\"}") }
+
+        val contents = loader.loadJsonFiles("de")
+
+        assertTrue(contents.contains("{\"edition\":\"EditionA\"}"))
+        assertFalse(contents.contains("{\"edition\":\"EditionEn\"}"))
+
+        matchingFile.delete()
+        nonMatchingFile.delete()
     }
 }
