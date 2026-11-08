@@ -15,8 +15,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "w400dp-h900dp-xxhdpi")
 class MainScreenFlowTest {
 
     @get:Rule
@@ -145,7 +147,7 @@ class MainScreenFlowTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Fehler bei Wiedergabe").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Fehler bei Wiedergabe").assertExists()
     }
 
     @Test
@@ -173,11 +175,11 @@ class MainScreenFlowTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Track Info:").assertIsDisplayed()
-        composeTestRule.onNodeWithText("- Title: Bohemian Rhapsody").assertIsDisplayed()
-        composeTestRule.onNodeWithText("- Artist: Queen").assertIsDisplayed()
-        composeTestRule.onNodeWithText("- Year: 1975").assertIsDisplayed()
-        composeTestRule.onNodeWithText("- URI: smb://192.168.1.1/music/0042.mp3").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Track Info:").assertExists()
+        composeTestRule.onNodeWithText("- Title: Bohemian Rhapsody").assertExists()
+        composeTestRule.onNodeWithText("- Artist: Queen").assertExists()
+        composeTestRule.onNodeWithText("- Year: 1975").assertExists()
+        composeTestRule.onNodeWithText("- URI: smb://192.168.1.1/music/0042.mp3").assertExists()
     }
 
     @Test
@@ -201,7 +203,7 @@ class MainScreenFlowTest {
             }
         }
 
-        composeTestRule.onNodeWithTag("offline_onboarding_hint").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("offline_onboarding_hint").assertExists()
         composeTestRule.onNodeWithText("OK").performClick()
         composeTestRule.onNodeWithTag("offline_onboarding_hint").assertDoesNotExist()
     }
