@@ -60,10 +60,17 @@ class IdentifyTrackUseCaseTest {
     }
 
     @Test
-    fun `identifies track with query parameters`() {
-        val result = useCase("https://example.com/p1/42?foo=bar", "example.com/")
+    fun `identifies track with query parameters and fragment`() {
+        val result = useCase("https://example.com/p1/42?foo=bar#section", "example.com/")
         assertEquals(42, result?.id)
         assertEquals("p1", result?.urlPart)
+    }
+
+    @Test
+    fun `identifies track when two-letter locale segment is present and prefix is blank`() {
+        val result = useCase("https://example.com/de/42", "")
+        assertEquals(42, result?.id)
+        assertEquals("", result?.urlPart)
     }
 
     @Test
@@ -81,6 +88,16 @@ class IdentifyTrackUseCaseTest {
     @Test
     fun `returns null for non-numeric track id`() {
         assertNull(useCase("p1/abc", ""))
+    }
+
+    @Test
+    fun `returns null when segments count is greater than 2`() {
+        assertNull(useCase("https://example.com/a/b/c/42", "example.com/"))
+    }
+
+    @Test
+    fun `returns null when text has no segments after prefix`() {
+        assertNull(useCase("https://example.com/", "example.com/"))
     }
 
     @Test

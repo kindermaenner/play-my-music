@@ -79,6 +79,43 @@ class ResolveTrackUriUseCaseTest {
         assertNull(result)
     }
 
+    @Test
+    fun `returns null if nasBaseFolder is blank and track has no explicit nasLocation`() {
+        val useCase = ResolveTrackUriUseCase(FakeLocalResolver(null))
+        val track = createDummyTrack()
+        val config = PlaybackConfig(nasAddress = "nas.local", nasBaseFolder = "   ")
+
+        assertNull(useCase(track, config))
+    }
+
+    @Test
+    fun `returns null if edition is blank and track has no explicit nasLocation`() {
+        val useCase = ResolveTrackUriUseCase(FakeLocalResolver(null))
+        val track = createDummyTrack(edition = "   ")
+        val config = PlaybackConfig(nasAddress = "nas.local", nasBaseFolder = "music")
+
+        assertNull(useCase(track, config))
+    }
+
+    @Test
+    fun `handles nasAddress already starting with smb scheme`() {
+        val useCase = ResolveTrackUriUseCase(FakeLocalResolver(null))
+        val track = createDummyTrack(id = 5, edition = "Ed")
+        val config = PlaybackConfig(nasAddress = "smb://192.168.1.1", nasBaseFolder = "music", trackIdPadding = 2)
+
+        val result = useCase(track, config)
+        assertEquals("smb://192.168.1.1/music/Ed/tracks/05.mp3", result)
+    }
+
+    @Test
+    fun `returns null if path segments has less than 2 parts`() {
+        val useCase = ResolveTrackUriUseCase(FakeLocalResolver(null))
+        val track = createDummyTrack().copy(nasLocation = "")
+        val config = PlaybackConfig(nasAddress = "single", nasBaseFolder = "")
+
+        assertNull(useCase(track, config))
+    }
+
     private fun createDummyTrack(id: Int = 1, edition: String = "E") = Track(
         id = id,
         title = "T",

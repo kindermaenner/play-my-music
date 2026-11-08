@@ -38,11 +38,13 @@ private data class EditionSyncCount(
 
 class OfflineLibrarySyncService(
     private val context: Context,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val storage: OfflineLibraryStorage = OfflineLibraryStorage(context),
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val smbFileOpener: (String, CIFSContext) -> SmbFile = { path, ctx -> SmbFile(path, ctx) },
+    private val smbChildOpener: (SmbFile, String) -> SmbFile = { parent, child -> SmbFile(parent, child) }
 ) {
 
     private val gson = Gson()
-    private val storage = OfflineLibraryStorage(context)
 
     suspend fun syncMetadata(settings: AppSettings): SyncResult {
         return withContext(ioDispatcher) {
@@ -113,7 +115,7 @@ class OfflineLibrarySyncService(
 
     private fun countTotalTracks(editionDirectories: List<SmbFile>, tracksFolderName: String): Int {
         return editionDirectories.sumOf { edDir ->
-            val remoteTracks = SmbFile(edDir, "$tracksFolderName/")
+            val remoteTracks = smbChildOpener(edDir, "$tracksFolderName/")
             if (remoteTracks.exists() && remoteTracks.isDirectory) {
                 remoteTracks.listFiles().orEmpty().count { !it.isDirectory }
             } else {
@@ -179,7 +181,7 @@ class OfflineLibrarySyncService(
         val imageName = mapping?.meta?.image?.trim().orEmpty()
         if (imageName.isBlank()) return 0
 
-        val imageSource = SmbFile(editionDirectory, imageName)
+        val imageSource = smbChildOpener(editionDirectory, imageName)
         return if (imageSource.exists()) {
             val copied = copySmbFileAtomic(imageSource, File(targetEditionDirectory, imageName))
             if (copied) 1 else 0
@@ -194,7 +196,7 @@ class OfflineLibrarySyncService(
         tracksFolderName: String,
         onTrackCopied: (SmbFile) -> Unit
     ): Int {
-        val remoteTracksDirectory = SmbFile(editionDirectory, "$tracksFolderName/")
+        val remoteTracksDirectory = smbChildOpener(editionDirectory, "$tracksFolderName/")
         if (!remoteTracksDirectory.exists() || !remoteTracksDirectory.isDirectory) {
             return 0
         }
@@ -214,7 +216,7 @@ class OfflineLibrarySyncService(
 
         for (context in contexts) {
             try {
-                val baseDirectory = SmbFile(baseUri, context)
+                val baseDirectory = smbFileOpener(baseUri, context)
                 if (baseDirectory.exists() && baseDirectory.isDirectory) {
                     return baseDirectory
                 }
